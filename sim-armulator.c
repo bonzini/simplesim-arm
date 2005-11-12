@@ -364,9 +364,11 @@ sim_uninit(void)
 word_t
 GetWord(void *p, md_addr_t addr)
 {
+#if 0
   if (addr < 0x2000000)
     myfprintf(stderr, "--rd @ %p(%n): addr:%x, val:%x....\n", 
 	regs.regs_R[15], sim_num_insn, addr, MEM_READ_WORD(mem, (addr & ~3)));
+#endif
 	
   return MEM_READ_WORD(mem, (addr & ~3));
 }
@@ -374,9 +376,11 @@ GetWord(void *p, md_addr_t addr)
 void
 PutWord(void *p, md_addr_t addr, word_t data)
 {
+#if 0
   if (addr < 0x2000000)
     myfprintf(stderr, "--wr @ %p(%n): addr:%x, val:%x....\n", 
 	regs.regs_R[15], sim_num_insn, addr, data);
+#endif
 
   MEM_WRITE_WORD(mem, (addr & ~3), data);
 }
