@@ -387,10 +387,7 @@ SRCS =	main.c sim-fast.c sim-safe.c sim-cache.c sim-profile.c \
 
 HDRS =	syscall.h memory.h regs.h sim.h loader.h cache.h bpred.h ptrace.h \
 	eventq.h resource.h endian.h dlite.h symbol.h eval.h bitmap.h \
-	eio.h range.h version.h endian.h misc.h \
-	target-pisa/pisa.h target-pisa/pisabig.h target-pisa/pisalittle.h \
-	target-pisa/pisa.def target-pisa/ecoff.h \
-	target-alpha/alpha.h target-alpha/alpha.def target-alpha/ecoff.h 
+	eio.h range.h version.h endian.h misc.h
 #
 # common objects
 #
@@ -637,7 +634,7 @@ endian.$(OEXT): memory.h options.h stats.h eval.h
 dlite.$(OEXT): host.h misc.h machine.h machine.def version.h eval.h regs.h
 dlite.$(OEXT): memory.h options.h stats.h sim.h symbol.h loader.h range.h
 dlite.$(OEXT): dlite.h
-symbol.$(OEXT): host.h misc.h target-pisa/ecoff.h loader.h machine.h
+symbol.$(OEXT): host.h misc.h loader.h machine.h
 symbol.$(OEXT): machine.def regs.h memory.h options.h stats.h eval.h symbol.h
 eval.$(OEXT): host.h misc.h eval.h machine.h machine.def
 options.$(OEXT): host.h misc.h options.h
@@ -653,19 +650,16 @@ misc.$(OEXT): host.h misc.h machine.h machine.def
 pisa.$(OEXT): host.h misc.h machine.h machine.def eval.h regs.h
 loader.$(OEXT): host.h misc.h machine.h machine.def endian.h regs.h memory.h
 loader.$(OEXT): options.h stats.h eval.h sim.h eio.h loader.h
-loader.$(OEXT): target-pisa/ecoff.h
 syscall.$(OEXT): host.h misc.h machine.h machine.def regs.h memory.h
 syscall.$(OEXT): options.h stats.h eval.h loader.h sim.h endian.h eio.h
 syscall.$(OEXT): syscall.h
-symbol.$(OEXT): host.h misc.h target-pisa/ecoff.h loader.h machine.h
+symbol.$(OEXT): host.h misc.h loader.h machine.h
 symbol.$(OEXT): machine.def regs.h memory.h options.h stats.h eval.h symbol.h
 alpha.$(OEXT): host.h misc.h machine.h machine.def eval.h regs.h
 loader.$(OEXT): host.h misc.h machine.h machine.def endian.h regs.h memory.h
 loader.$(OEXT): options.h stats.h eval.h sim.h eio.h loader.h
-loader.$(OEXT): target-alpha/ecoff.h target-alpha/alpha.h
 syscall.$(OEXT): host.h misc.h machine.h machine.def regs.h memory.h
 syscall.$(OEXT): options.h stats.h eval.h loader.h sim.h endian.h eio.h
 syscall.$(OEXT): syscall.h
 symbol.$(OEXT): host.h misc.h loader.h machine.h machine.def regs.h memory.h
-symbol.$(OEXT): options.h stats.h eval.h symbol.h target-alpha/ecoff.h
-symbol.$(OEXT): target-alpha/alpha.h
+symbol.$(OEXT): options.h stats.h eval.h symbol.h

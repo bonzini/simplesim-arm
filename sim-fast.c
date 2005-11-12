@@ -395,8 +395,9 @@ sim_main(void)
   fprintf(stderr, "sim: ** starting *fast* functional simulation **\n");
 
   /* must have natural byte/word ordering */
-  if (sim_swap_bytes || sim_swap_words)
-    fatal("sim: *fast* functional simulation cannot swap bytes or words");
+#ifdef MD_CROSS_ENDIAN
+  fatal("sim: *fast* functional simulation cannot swap bytes or words");
+#endif
 
 #ifdef USE_JUMP_TABLE
 

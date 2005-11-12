@@ -203,17 +203,23 @@
 #include <sys/mount.h>
 #endif
 #endif /* !_AIX */
-#if !defined(linux) && !defined(sparc) && !defined(hpux) && !defined(__hpux) && !defined(__CYGWIN32__) && !defined(ultrix)
-#ifndef _MSC_VER
-#include <sys/select.h>
+#if !defined(linux) && !defined(sparc) && !defined(hpux) && !defined(__hpux) && !defined(__CYGWIN32__) && !defined(ultrix) && !defined (__APPLE__)
+#undef __unix__
+#else
+#define __unix__ 1
 #endif
+
+#if !defined __unix__ && !defined _MSC_VER
+#include <sys/select.h>
 #endif
 #ifdef linux
 #include <sgtty.h>
+#endif /* linux */
+#ifdef __unix__
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
 #include <netinet/in.h>
-#endif /* linux */
+#endif
 
 #if defined(__svr4__)
 #include <sys/dirent.h>
@@ -273,7 +279,7 @@ int getdirentries(int fd, char *buf, int nbytes, long *basep);
 #ifdef __FreeBSD__
 #include <sys/ioctl_compat.h>
 #else
-#ifndef _MSC_VER
+#ifdef __LINUX__
 #include <termio.h>
 #endif
 #endif
@@ -951,7 +957,7 @@ struct xlate_table_t tcpopt_map[] =
 
 struct xlate_table_t socklevel_map[] =
 {
-#if defined(__svr4__) || defined(__osf__)
+#ifdef IPPROTO_IP
   { OSF_SOL_SOCKET,	SOL_SOCKET },
   { OSF_SOL_IP,		IPPROTO_IP },
   { OSF_SOL_TCP,	IPPROTO_TCP },
@@ -4250,11 +4256,11 @@ sys_syscall_1(struct regs_t *regs,	/* registers to access */
 
 #ifdef MD_CROSS_ENDIAN
 #define ANGEL_GET_INTS(n) \
-  {
-    int nword;
-    mem_bcopy(mem_fn, mem, Read, regs->regs_R[MD_REG_R1], angel, 4 * (n));
-    for (nword = 0; nword < n; nword++)
-      angel[nword] = MD_SWAPW (angel[nword]);
+  { \
+    int nword; \
+    mem_bcopy(mem_fn, mem, Read, regs->regs_R[MD_REG_R1], angel, 4 * (n)); \
+    for (nword = 0; nword < n; nword++) \
+      angel[nword] = MD_SWAPW (angel[nword]); \
   }
 #else
 #define ANGEL_GET_INTS(n) \
@@ -4365,11 +4371,15 @@ sys_syscall_1(struct regs_t *regs,	/* registers to access */
 	case AngelSWI_Reason_FLen:
 	  ANGEL_GET_INTS (1);
 	  {
-	    off_t pos = lseek (angel[0], 0, SEEK_END), size;
+	    off_t pos = lseek (angel[0], 0, SEEK_CUR), size;
 	    if (pos == -1)
 	      size = -1;
 	    else	
-	      size = lseek (angel[0], pos, SEEK_SET);
+	      {
+		size = lseek (angel[0], 0, SEEK_END);
+		lseek (angel[0], pos, SEEK_SET);
+	      }
+
 	    regs->regs_R[MD_REG_R0] = size;
 	    if (size == -1)
 	      angel_errno = errno;
@@ -4421,20 +4431,16 @@ sys_syscall_1(struct regs_t *regs,	/* registers to access */
 
 	case AngelSWI_Reason_HeapInfo:
 	  {
-	    word_t heapinfo_ptr;
 	    word_t heapinfo[4];
 	    heapinfo[0] = ROUND_UP(ld_data_base + ld_data_size, MD_PAGE_SIZE);
 	    heapinfo[1] = ROUND_DOWN (ld_environ_base - (1 << 20), MD_PAGE_SIZE);
 	    heapinfo[2] = ld_environ_base;
 	    heapinfo[3] = ld_environ_base - (1 << 20);
 
-
 	    /* Read the location from the parameter block... */
 	    ANGEL_GET_INTS (1);
-	    mem_bcopy(mem_fn, mem, Read, angel[0], &heapinfo_ptr, 4);
 
 #ifdef MD_CROSS_ENDIAN
-	    heapinfo_ptr = MD_SWAPW (heapinfo_ptr);
 	    heapinfo[0] = MD_SWAPW (heapinfo[0]);
 	    heapinfo[1] = MD_SWAPW (heapinfo[1]);
 	    heapinfo[2] = MD_SWAPW (heapinfo[2]);
@@ -4442,7 +4448,7 @@ sys_syscall_1(struct regs_t *regs,	/* registers to access */
 #endif
 
 	    /* ... and write the info there */
-	    mem_bcopy(mem_fn, mem, Write, heapinfo_ptr, heapinfo, 16);
+	    mem_bcopy(mem_fn, mem, Write, angel[0], heapinfo, 16);
 	  }
 	  break;
 

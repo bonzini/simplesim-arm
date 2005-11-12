@@ -205,6 +205,51 @@ ld_reg_stats(struct stat_sdb_t *sdb)	/* stats data base */
 }
 
 
+/* Read an ELF file header.  */
+static int 
+fhdr_read (struct elf_filehdr *p_fhdr, FILE *fobj)
+{
+  int result;
+  if ((result = fread (p_fhdr, sizeof(struct elf_filehdr), 1, fobj)) < 1)
+    return result;
+
+  p_fhdr->e_type = MD_SWAPH (p_fhdr->e_type);
+  p_fhdr->e_machine = MD_SWAPH (p_fhdr->e_machine);
+  p_fhdr->e_version = MD_SWAPW (p_fhdr->e_version);
+  p_fhdr->e_entry = MD_SWAPW (p_fhdr->e_entry);
+  p_fhdr->e_phoff = MD_SWAPW (p_fhdr->e_phoff);
+  p_fhdr->e_shoff = MD_SWAPW (p_fhdr->e_shoff);
+  p_fhdr->e_flags = MD_SWAPW (p_fhdr->e_flags);
+  p_fhdr->e_ehsize = MD_SWAPH (p_fhdr->e_ehsize);
+  p_fhdr->e_phentsize = MD_SWAPH (p_fhdr->e_phentsize);
+  p_fhdr->e_phnum = MD_SWAPH (p_fhdr->e_phnum);
+  p_fhdr->e_shentsize = MD_SWAPH (p_fhdr->e_shentsize);
+  p_fhdr->e_shnum = MD_SWAPH (p_fhdr->e_shnum);
+  p_fhdr->e_shstrndx = MD_SWAPH (p_fhdr->e_shstrndx);
+  return result;
+}
+
+/* Read an ELF file header.  */
+static int 
+shdr_read (struct elf_scnhdr *p_shdr, FILE *fobj)
+{
+  int result;
+  if ((result = fread (p_shdr, sizeof(struct elf_scnhdr), 1, fobj)) < 1)
+    return result;
+
+  p_shdr->sh_name = MD_SWAPW (p_shdr->sh_name);
+  p_shdr->sh_type = MD_SWAPW (p_shdr->sh_type);
+  p_shdr->sh_flags = MD_SWAPW (p_shdr->sh_flags);
+  p_shdr->sh_addr = MD_SWAPW (p_shdr->sh_addr);
+  p_shdr->sh_offset = MD_SWAPW (p_shdr->sh_offset);
+  p_shdr->sh_size = MD_SWAPW (p_shdr->sh_size);
+  p_shdr->sh_link = MD_SWAPW (p_shdr->sh_link);
+  p_shdr->sh_info = MD_SWAPW (p_shdr->sh_info);
+  p_shdr->sh_addralign = MD_SWAPW (p_shdr->sh_addralign);
+  p_shdr->sh_entsize = MD_SWAPW (p_shdr->sh_entsize);
+  return result;
+}
+
 /* load program text and initialized data into simulated virtual memory
    space and initialize program segment range variables */
 void
@@ -305,7 +350,7 @@ ld_load_prog(char *fname,		/* program to load */
   if (!fobj)
     fatal("cannot open executable `%s'", argv[0]);
 
-  if (fread(&fhdr, sizeof(struct elf_filehdr), 1, fobj) < 1)
+  if (fhdr_read(&fhdr, fobj) < 1)
     fatal("cannot read header from executable `%s'", argv[0]);
 
   /* check if it is a valid ELF file */
@@ -332,7 +377,7 @@ ld_load_prog(char *fname,		/* program to load */
      first, followed by the optional header (this is the aouthdr), the size
      of the aouthdr is given in Fdhr.f_opthdr */
   fseek(fobj, fhdr.e_shoff + (fhdr.e_shstrndx * fhdr.e_shentsize), SEEK_SET);
-  if (fread(&shdr, sizeof(struct elf_scnhdr), 1, fobj) < 1)
+  if (shdr_read(&shdr, fobj) < 1)
     fatal("error reading string section header from `%s'", argv[0]);
 
   /* allocate space for string table */
@@ -359,7 +404,7 @@ ld_load_prog(char *fname,		/* program to load */
 
       if (fseek(fobj, fhdr.e_shoff + (i * fhdr.e_shentsize), SEEK_SET) < 0)
 	fatal("could not reset location in executable");
-      if (fread(&shdr, sizeof(struct elf_scnhdr), 1, fobj) < 1)
+      if (shdr_read(&shdr, fobj) < 1)
 	fatal("could not read section %d from executable", i);
 
       /* make sure the file is static */
@@ -443,30 +488,17 @@ ld_load_prog(char *fname,		/* program to load */
     fatal("program entry point not specified");
 
   /* determine byte/words swapping required to execute on this host */
-  sim_swap_bytes = (endian_host_byte_order() != endian_target_byte_order());
-  if (sim_swap_bytes)
-    {
-#if 0 /* FIXME: disabled until further notice... */
-      /* cross-endian is never reliable, why this is so is beyond the scope
-	 of this comment, e-mail me for details... */
-      fprintf(stderr, "sim: *WARNING*: swapping bytes to match host...\n");
-      fprintf(stderr, "sim: *WARNING*: swapping may break your program!\n");
-      /* #else */
-      fatal("binary endian does not match host endian");
+#ifdef MD_CROSS_ENDIAN
+  if (endian_host_byte_order() == endian_target_byte_order())
+    fatal ("incorrect endianness detection");
+  if (endian_host_word_order() == endian_target_word_order())
+    fatal ("incorrect endianness detection");
+#else
+  if (endian_host_byte_order() != endian_target_byte_order())
+    fatal ("incorrect endianness detection");
+  if (endian_host_word_order() != endian_target_word_order())
+    fatal ("incorrect endianness detection");
 #endif
-    }
-  sim_swap_words = (endian_host_word_order() != endian_target_word_order());
-  if (sim_swap_words)
-    {
-#if 0 /* FIXME: disabled until further notice... */
-      /* cross-endian is never reliable, why this is so is beyond the scope
-	 of this comment, e-mail me for details... */
-      fprintf(stderr, "sim: *WARNING*: swapping words to match host...\n");
-      fprintf(stderr, "sim: *WARNING*: swapping may break your program!\n");
-      /* #else */
-      fatal("binary endian does not match host endian");
-#endif
-    }
 
   /* set up a local stack pointer, this is where the argv and envp
      data is written into program memory */
@@ -483,7 +515,7 @@ ld_load_prog(char *fname,		/* program to load */
   ld_environ_base = sp;
 
   /* write [argc] to stack */
-  temp = argc;
+  temp = MD_SWAPW (argc);
   mem_access(mem, Write, sp, &temp, sizeof(word_t));
   regs->regs_R[MD_REG_R1] = temp;
   sp += sizeof(word_t);
@@ -503,7 +535,7 @@ ld_load_prog(char *fname,		/* program to load */
   for (i=0; i<argc; i++)
     {
       /* write the argv pointer array entry */
-      temp = sp;
+      temp = MD_SWAPW (sp);
       mem_access(mem, Write, argv_addr + i*sizeof(md_addr_t),
 		 &temp, sizeof(md_addr_t));
       /* and the data */
@@ -518,7 +550,7 @@ ld_load_prog(char *fname,		/* program to load */
   for (i = 0; envp[i]; i++)
     {
       /* write the envp pointer array entry */
-      temp = sp;
+      temp = MD_SWAPW (sp);
       mem_access(mem, Write, envp_addr + i*sizeof(md_addr_t),
 		 &temp, sizeof(md_addr_t));
       /* and the data */
@@ -555,151 +587,3 @@ ld_load_prog(char *fname,		/* program to load */
 	ld_stack_base, ld_stack_size);
   debug("ld_prog_entry: 0x%08x", ld_prog_entry);
 }
-
-
-
-
-
-
-
-
-#if 0
-
-XXX
-    if (fread(&ahdr, sizeof(struct ecoff_aouthdr), 1, fobj) < 1)
-      fatal("cannot read AOUT header from executable `%s'", argv[0]);
-
-    ld_text_base = ahdr.text_start;
-    ld_text_size = ahdr.tsize;
-    ld_prog_entry = ahdr.entry;
-    ld_data_base = ahdr.data_start;
-    ld_data_size = ahdr.dsize + ahdr.bsize;
-    regs->regs_R[MD_REG_GP] = ahdr.gp_value;
-
-    /* compute data segment size from data break point */
-    data_break = ld_data_base + ld_data_size;
-XXX
-
-	switch (shdr.s_flags)
-	  {
-	  case ECOFF_STYP_TEXT:
-	    p = calloc(shdr.s_size, sizeof(char));
-	    if (!p)
-	      fatal("out of virtual memory");
-
-	    if (fseek(fobj, shdr.s_scnptr, 0) == -1)
-	      fatal("could not read `.text' from executable", i);
-	    if (fread(p, shdr.s_size, 1, fobj) < 1)
-	      fatal("could not read text section from executable");
-
-	    /* copy program section into simulator target memory */
-	    mem_bcopy(mem_access, mem, Write,
-		      shdr.s_vaddr, p, shdr.s_size);
-
-#if 0
-	    /* create tail padding and copy into simulator target memory */
-	    mem_bzero(mem_access, mem, shdr.s_vaddr + shdr.s_size,
-		      TEXT_TAIL_PADDING);
-#endif
-
-	    /* release the section buffer */
-	    free(p);
-
-#if 0
-	    Text_seek = shdr.s_scnptr;
-	    Text_start = shdr.s_vaddr;
-	    Text_size = shdr.s_size / 4;
-	    /* there is a null routine after the supposed end of text */
-	    Text_size += 10;
-	    Text_end = Text_start + Text_size * 4;
-	    /* create_text_reloc(shdr.s_relptr, shdr.s_nreloc); */
-#endif
-	    break;
-
-	  case ECOFF_STYP_INIT:
-	  case ECOFF_STYP_FINI:
-	    if (shdr.s_size > 0)
-	      {
-		p = calloc(shdr.s_size, sizeof(char));
-		if (!p)
-		  fatal("out of virtual memory");
-		
-		if (fseek(fobj, shdr.s_scnptr, 0) == -1)
-		  fatal("could not read `.text' from executable", i);
-		if (fread(p, shdr.s_size, 1, fobj) < 1)
-		  fatal("could not read text section from executable");
-		
-		/* copy program section into simulator target memory */
-		mem_bcopy(mem_access, mem, Write, shdr.s_vaddr,
-			  p, shdr.s_size);
-		
-		/* release the section buffer */
-		free(p);
-	      }
-	    else
-	      warn("section `%s' is empty...", shdr.s_name);
-	    break;
-
-	  case ECOFF_STYP_LITA:
-	  case ECOFF_STYP_LIT8:
-	  case ECOFF_STYP_LIT4:
-	  case ECOFF_STYP_XDATA:
-	  case ECOFF_STYP_PDATA:
-	  case ECOFF_STYP_RCONST:
-	    /* fall through */
-
-	  case ECOFF_STYP_RDATA:
-	    /* The .rdata section is sometimes placed before the text
-	     * section instead of being contiguous with the .data section.
-	     */
-#if 0
-	    Rdata_start = shdr.s_vaddr;
-	    Rdata_size = shdr.s_size;
-	    Rdata_seek = shdr.s_scnptr;
-#endif
-	    /* fall through */
-	  case ECOFF_STYP_DATA:
-#if 0
-	    Data_seek = shdr.s_scnptr;
-#endif
-	    /* fall through */
-	  case ECOFF_STYP_SDATA:
-#if 0
-	    Sdata_seek = shdr.s_scnptr;
-#endif
-	    if (shdr.s_size > 0)
-	      {
-		p = calloc(shdr.s_size, sizeof(char));
-		if (!p)
-		  fatal("out of virtual memory");
-
-		if (fseek(fobj, shdr.s_scnptr, 0) == -1)
-		  fatal("could not read `.text' from executable", i);
-		if (fread(p, shdr.s_size, 1, fobj) < 1)
-		  fatal("could not read text section from executable");
-
-		/* copy program section it into simulator target memory */
-		mem_bcopy(mem_access, mem, Write, shdr.s_vaddr,
-			  p, shdr.s_size);
-
-		/* release the section buffer */
-		free(p);
-	      }
-	    else
-	      warn("section `%s' is empty...", shdr.s_name);
-	  break;
-
-	  case ECOFF_STYP_BSS:
-	  case ECOFF_STYP_SBSS:
-	    /* no data to read... */
-	    break;
-
-	  default:
-	    warn("section `%s' ignored...", shdr.s_name);
-	  }
-      }
-
-    /* done with the executable, close it */
-    if (fclose(fobj))
-      fatal("could not close executable `%s'", argv[0]);
-#endif
