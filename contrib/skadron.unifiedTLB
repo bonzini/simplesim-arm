@@ -1,0 +1,157 @@
+Subject: another minor change
+   Date: Wed, 12 Nov 1997 08:12:55 -0800 (PST)
+   From: Kevin Skadron <skadron@cs.princeton.edu>
+
+
+Received: from ormail.intel.com by ichips.intel.com (8.7.4/jIII)
+        id NAA14814; Fri, 11 Apr 1997 13:32:23 -0700 (PDT)
+Received: from CS.Princeton.EDU (CS.Princeton.EDU [128.112.136.10])
+          by ormail.intel.com (8.8.4/8.8.4) with ESMTP
+          id NAA26461 for <taustin@ichips.intel.com>; Fri, 11 Apr 1997 13:44:43 -0700 (PDT)
+Received: from tyrolia.CS.Princeton.EDU (tyrolia [128.112.168.4]) by CS.Princeton.EDU (8.7.6/8.7.3) with SMTP id QAA14034 for <taustin@ichips.intel.com>; Fri, 11 Apr 1997 16:41:30 -0400 (EDT)
+Received: by tyrolia.CS.Princeton.EDU (8.6.12/CS-Client)
+        id QAA16554; Fri, 11 Apr 1997 16:41:28 -0400
+From: Kevin Skadron <skadron@CS.Princeton.EDU>
+Message-Id: <199704112041.QAA16554@tyrolia.CS.Princeton.EDU>
+Subject: another minor change
+To: taustin@ichips.intel.com (Todd Austin)
+Date: Fri, 11 Apr 1997 16:41:27 -0400 (EDT)
+X-Mailer: ELM [version 2.4 PL24 PGP3 *ALPHA*]
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Length: 3616
+
+I allowed the tlb's to be unified.
+
+--Kevin
+
+-------------
+*** 1.26        1997/04/11 01:05:02
+--- 1.27        1997/04/11 16:53:31
+***************
+*** 49,57 ****
+   * INTERNET: dburger@cs.wisc.edu
+   * US Mail:  1210 W. Dayton Street, Madison, WI 53706
+   *
+!  * $Id: skadron.unifiedTLB,v 1.1.1.1 2000/11/29 14:53:54 cu-cs Exp $
+   *
+   * $Log: skadron.unifiedTLB,v $
+   * Revision 1.1.1.1  2000/11/29 14:53:54  cu-cs
+   * Grand unification of arm sources.
+   *
+   *
+   * Revision 1.1.1.1  2000/05/26 15:21:54  taustin
+   * SimpleScalar Tool Set
+   *
+   *
+   * Revision 1.26  1997/04/11  01:05:02  skadron
+   * Added mshr's.  Infinite secondary misses allowed.  Num_mshrs = 0 means
+   *    infinite mshr'ing.
+--- 49,60 ----
+   * INTERNET: dburger@cs.wisc.edu
+   * US Mail:  1210 W. Dayton Street, Madison, WI 53706
+   *
+!  * $Id: skadron.unifiedTLB,v 1.1.1.1 2000/11/29 14:53:54 cu-cs Exp $
+   *
+   * $Log: skadron.unifiedTLB,v $
+   * Revision 1.1.1.1  2000/11/29 14:53:54  cu-cs
+   * Grand unification of arm sources.
+   *
+   *
+   * Revision 1.1.1.1  2000/05/26 15:21:54  taustin
+   * SimpleScalar Tool Set
+   *
+   *
++  * Revision 1.27  1997/04/11  16:53:31  skadron
++  * Allowed itlb and dtlb to be unified
++  *
+   * Revision 1.26  1997/04/11  01:05:02  skadron
+   * Added mshr's.  Infinite secondary misses allowed.  Num_mshrs = 0 means
+   *    infinite mshr'ing.
+***************
+*** 1293,1330 ****
+    if (cache_il1)
+      cache_il1_blkshift = cache_il1->set_shift;
+  
+!   /* use an I-TLB? */
+!   if (!mystricmp(itlb_opt, "none"))
+!     itlb = NULL;
+    else
+      {
+!       if (sscanf(itlb_opt, "%[^:]:%d:%d:%d:%c:%d",
+                 name, &nsets, &bsize, &assoc, &c, &mshrs) != 6)
+        fatal("bad TLB parms: "
+              "<name>:<nsets>:<page_size>:<assoc>:<repl>:<mshr's>");
+!       itlb = cache_create(name, nsets, bsize, /* balloc */FALSE,
+                          /* usize */sizeof(SS_ADDR_TYPE), assoc,
+!                         cache_char2policy(c), itlb_access_fn,
+                          /* hit latency */1, 0, mshrs);
+        if (tlb_perfect)
+!       cache_set_perfect(itlb);
+      }
+  
+!   /* use a D-TLB? */
+!   if (!mystricmp(dtlb_opt, "none"))
+!     dtlb = NULL;
+    else
+      {
+!       if (sscanf(dtlb_opt, "%[^:]:%d:%d:%d:%c:%d",
+                 name, &nsets, &bsize, &assoc, &c, &mshrs) != 6)
+        fatal("bad TLB parms: "
+              "<name>:<nsets>:<page_size>:<assoc>:<repl>:<mshr's>");
+!       dtlb = cache_create(name, nsets, bsize, /* balloc */FALSE,
+                          /* usize */sizeof(SS_ADDR_TYPE), assoc,
+!                         cache_char2policy(c), dtlb_access_fn,
+                          /* hit latency */1, 0, mshrs);
+        if (tlb_perfect)
+!       cache_set_perfect(dtlb);      
+      }
+  
+    if (cache_dl1_lat_nelt != 2)
+--- 1296,1339 ----
+    if (cache_il1)
+      cache_il1_blkshift = cache_il1->set_shift;
+  
+!   /* use a D-TLB? */
+!   if (!mystricmp(dtlb_opt, "none"))
+!     dtlb = NULL;
+    else
+      {
+!       if (sscanf(dtlb_opt, "%[^:]:%d:%d:%d:%c:%d",
+                 name, &nsets, &bsize, &assoc, &c, &mshrs) != 6)
+        fatal("bad TLB parms: "
+              "<name>:<nsets>:<page_size>:<assoc>:<repl>:<mshr's>");
+!       dtlb = cache_create(name, nsets, bsize, /* balloc */FALSE,
+                          /* usize */sizeof(SS_ADDR_TYPE), assoc,
+!                         cache_char2policy(c), dtlb_access_fn,
+                          /* hit latency */1, 0, mshrs);
+        if (tlb_perfect)
+!       cache_set_perfect(dtlb);      
+      }
+  
+!   /* use an I-TLB? */
+!   if (!mystricmp(itlb_opt, "none"))
+!     itlb = NULL;
+!   else if (!mystricmp(itlb_opt, "dtlb"))
+!     {
+!       if (dtlb == NULL)
+!       fatal("itlb cannot access dtlb as it's undefined");
+!       dtlb = itlb;
+!     }
+    else
+      {
+!       if (sscanf(itlb_opt, "%[^:]:%d:%d:%d:%c:%d",
+                 name, &nsets, &bsize, &assoc, &c, &mshrs) != 6)
+        fatal("bad TLB parms: "
+              "<name>:<nsets>:<page_size>:<assoc>:<repl>:<mshr's>");
+!       itlb = cache_create(name, nsets, bsize, /* balloc */FALSE,
+                          /* usize */sizeof(SS_ADDR_TYPE), assoc,
+!                         cache_char2policy(c), itlb_access_fn,
+                          /* hit latency */1, 0, mshrs);
+        if (tlb_perfect)
+!       cache_set_perfect(itlb);
+      }
+  
+    if (cache_dl1_lat_nelt != 2)
+

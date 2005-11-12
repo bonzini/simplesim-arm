@@ -1,0 +1,119 @@
+
+Cheetah is a cache simulation package which can simulate various cache
+configurations in a single pass through the address trace.
+Specifically, Cheetah can simulate ranges of set-associative,
+fully-associative or direct-mapped caches. Here are answers to some
+common questions.
+
+Why a package for cache simulation ?
+
+It is fairly trivial to write a cache simulator which simulates one
+cache at a time and outputs the miss ratio.  However, cache simulators
+are typically used to simulate traces on several configurations, and
+single cache simulators are inefficient and difficult to manage for
+such purposes.
+
+Cheetah uses extremely efficient single-pass algorithms to simulate
+multiple cache configurations.  These algorithms exploit inclusion and
+other properties that hold between cache configurations.  Therefore,
+Cheetah has the potential to speed-up the cache evaluation process
+significantly.
+
+Additionally, Cheetah can simulate caches under OPT replacement [2].
+Cache simulators for OPT are difficult to develop. Cheetah uses new
+algorithms that we developed to perform single-pass simulation of
+caches under OPT replacement efficiently.
+
+
+
+How does Cheetah differ from other cache simulation packages like
+'Dinero III' (developed by Mark Hill, and distributed with the
+Hennessy-Patterson book on architecture) and 'Tycho' also developed by
+Mark Hill ?
+
+Dinero III (V3.3) simulates one set-associative cache configuration at
+a time. In contrast, Cheetah simulates a range of set-associative or
+fully-associative cache configurations at a time.  Further, Cheetah
+can simulate OPT as well as LRU replacement; Dinero III can simulate
+LRU, random and FIFO.  However, Dinero III simulates sub-block
+placement, prefetch strategies and write effects. Currently, Cheetah
+cannot simulate these features.
+  
+Tycho is a single pass simulator for multiple LRU set-associative
+caches.  Tycho's capabilities are a subset of those of Cheetah.
+Further, the algorithm [1] that Cheetah uses to do the set-associative
+cache simulation is more efficient both in terms of simulation time
+and memory requirements than the one used in Tycho.  Typically, on a
+trace generated using the pixie tool (available on workstations based
+on the MIPS processor), Cheetah is about six times faster than Tycho,
+partly due to algorithmic improvements (2X) and partly due to
+formatting overheads (3X).
+
+The following publications describe the various algorithms used in
+Cheetah in greater detail:
+
+[1] Rabin A. Sugumar and Santosh G. Abraham, ``Efficient simulation
+    of caches using binomial trees,'' Technical Report CSE-TR  1991.
+[2] Rabin A. Sugumar and Santosh G. Abraham, ``Efficient simulation
+    of caches under OPT replacement with applications to miss
+    characterization,'' in the proceedings of the 1993 ACM SIGMETRICS
+    conference.
+
+
+
+What are the conditions of use ?
+
+You are free to use this package as you wish. You should understand,
+however, that although we have tried hard to ensure that the simulator
+is accurate, we do not guarantee anything, and that this package is
+distributed with absolutely no warranty.
+
+You are also free to modify and distribute this package as you wish as
+long as it is not for commercial gain. We ask that you retain our
+copyright notice and make clear what your modifications were.
+If you use the simulator extensively in any of your publications,
+please reference one of the relevant papers above.
+
+Also, if you use the simulator, we would like to hear from you to have a
+rough idea of where it is being used. We could then inform you about
+bug fixes and new versions of the package.  We would also like to hear
+any comments you have on the simulator, and about any improvements you
+make so that we can incorporate them in future releases.
+
+We can be reached by email at rabin@eecs.umich.edu or sga@eecs.umich.edu .
+
+
+***********************************************************************************
+
+Files in the directory
+
+  COPYRIGHT  Copyright notice
+  README     This file
+  VERSION    Version number
+  Makefile   Make file
+  main.c     Common user interface
+  saclru.c   LRU set-associative cache simulator.
+  faclru.c   LRU fully-associative cache simulator.
+  sacopt.c   OPT set-associative cache simulator.
+  facopt.c   OPT fully-associative cache simulator.
+  ppopt.c    Preprocessor for OPT simulators.
+  dmvl.c     Variable line size direct-mapped cache simulator.
+  ascbin.c   Conversion program. ASCII to basic binary format.
+  pixie.c    Routine that converts pixie format to simulator format.
+  din.c      Routine that converts DIN format to simulator format.
+  utils.c    Some common functions used by the simulators.
+
+  orig_results   Result file used to test installation.
+  trace.ccom.Z   A sample trace in ASCII format. To run this on cheetah
+
+                  uncompress trace.ccom
+                  ascbin < trace.ccom > trace_file
+		  cheetah -Fbasic -ftrace_file [other options]
+
+  cheetah.1         Man page. To view: 'nroff -man cheetah.1' .
+
+
+Installation
+  'make cheetah' will make the simulator.
+  'make test' will make the simulator and also test it on the sample trace.
+

@@ -1,0 +1,164 @@
+Subject: Release of fu's on recover
+   Date: Wed, 12 Nov 1997 08:12:13 -0800 (PST)
+   From: Kevin Skadron <skadron@cs.princeton.edu>
+
+
+Received: from ormail.intel.com by ichips.intel.com (8.7.4/jIII)
+        id NAA22977; Tue, 25 Feb 1997 13:57:55 -0800 (PST)
+Received: from CS.Princeton.EDU (CS.Princeton.EDU [128.112.136.10])
+          by ormail.intel.com (8.8.4/8.8.4) with ESMTP
+          id OAA14566 for <taustin@ichips.intel.com>; Tue, 25 Feb 1997 14:03:54 -0800 (PST)
+Received: from dynastar.CS.Princeton.EDU (dynastar [128.112.168.3]) by CS.Princeton.EDU (8.7.6/8.7.3) with SMTP id RAA15145; Tue, 25 Feb 1997 17:00:36 -0500 (EST)
+Received: by dynastar.CS.Princeton.EDU (8.6.12/CS-Client)
+        id RAA00383; Tue, 25 Feb 1997 17:00:34 -0500
+From: Kevin Skadron <skadron@CS.Princeton.EDU>
+Message-Id: <199702252200.RAA00383@dynastar.CS.Princeton.EDU>
+Subject: Release of fu's on recover
+To: taustin@ichips.intel.com (Todd Austin)
+Date: Tue, 25 Feb 1997 17:00:33 -0500 (EST)
+Cc: psa@CS.Princeton.EDU (Pritpal S. Ahuja)
+X-Mailer: ELM [version 2.4 PL24 PGP3 *ALPHA*]
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Length: 4441
+
+Here's some code to reset the functional units during recovery from a
+branch misprediction.  I simply added a pointer into the 'rs' that
+points to the fu assigned to that inst.  Upon recovery, if that inst
+is being squashed and its fu's 'busy' value is non-zero, I set it
+to 1.  That way the resource will be ready in the next cycle for a
+new instruction.  
+
+It doesn't screw up subsequent instructions, because they get squashed, 
+too.  And it doesn't screw up earlier instructions, because if this current 
+instruction was able to use this resource, previous instructions were
+no longer tying it up.
+
+It does assume that you can reset the functional unit in 1 cycle, but
+that seems reasonable.
+
+The context diff follows.
+
+--Kevin
+
+
+*** 1.8 1997/02/25 21:15:18
+--- sim-outorder.c      1997/02/25 21:58:51
+***************
+*** 47,59 ****
+   * and improve what you give them.
+   *
+   * INTERNET: dburger@cs.wisc.edu
+   * US Mail:  1210 W. Dayton Street, Madison, WI 53706
+   *
+!  * $Id: skadron.furecover,v 1.1.1.1 2000/11/29 14:53:54 cu-cs Exp $
+   *
+   * $Log: skadron.furecover,v $
+   * Revision 1.1.1.1  2000/11/29 14:53:54  cu-cs
+   * Grand unification of arm sources.
+   *
+   *
+   * Revision 1.1.1.1  2000/05/26 15:21:54  taustin
+   * SimpleScalar Tool Set
+   *
+   *
+   * Revision 1.8  1997/02/25  21:15:18  skadron
+   * Cleaned up a few minor details on store-handling.  Of course, write
+   *    buffering still isn't modeled, and that's the biggest store-related
+   * issue.
+   *
+--- 47,68 ----
+   * and improve what you give them.
+   *
+   * INTERNET: dburger@cs.wisc.edu
+   * US Mail:  1210 W. Dayton Street, Madison, WI 53706
+   *
+!  * $Id: skadron.furecover,v 1.1.1.1 2000/11/29 14:53:54 cu-cs Exp $
+   *
+   * $Log: skadron.furecover,v $
+   * Revision 1.1.1.1  2000/11/29 14:53:54  cu-cs
+   * Grand unification of arm sources.
+   *
+   *
+   * Revision 1.1.1.1  2000/05/26 15:21:54  taustin
+   * SimpleScalar Tool Set
+   *
+   *
++  * Revision 1.10  1997/02/25  21:58:48  skadron
++  * Added code to reset fu's on recovery from a branch-mispredict.  Note that
++  *    this supersedes the comment added in previous version regarding
++  *    resetting fu's
++  *
++  * Revision 1.9  1997/02/25  21:27:22  skadron
++  * Added a note regarding how functional units are cleaned up on a branch-
++  *    mispredict.
++  *
+   * Revision 1.8  1997/02/25  21:15:18  skadron
+   * Cleaned up a few minor details on store-handling.  Of course, write
+   *    buffering still isn't modeled, and that's the biggest store-related
+   * issue.
+   *
+***************
+*** 1482,1491 ****
+--- 1491,1502 ----
+    /* output operand dependency list, these lists are used to
+       limit the number of associative searches into the RUU when
+       instructions complete and need to wake up dependent insts */
+    int onames[MAX_ODEPS];                /* output logical names (NA=unused) */
+    struct RS_link *odep_list[MAX_ODEPS]; /* chains to consuming operations */
++   struct res_template *fu;            /* a ptr to the func. unit used by
++                                        * this instr. */
+  
+    /* input dependent links, the output chains rooted above use these
+       fields to mark input operands as ready, when all these fields have
+       been set non-zero, the RUU operation has all of its register
+       operands, it may commence execution as soon as all of its memory
+***************
+*** 2261,2271 ****
+        {
+          RSLINK_FREE_LIST(RUU[RUU_index].odep_list[i]);
+          /* blow away the consuming op list */
+          RUU[RUU_index].odep_list[i] = NULL;
+        }
+!       
+        /* squash this RUU entry */
+        RUU[RUU_index].tag++;
+  
+        /* indicate in pipetrace that this instruction was squashed */
+        ptrace_endinst(RUU[RUU_index].ptrace_seq);
+--- 2272,2289 ----
+        {
+          RSLINK_FREE_LIST(RUU[RUU_index].odep_list[i]);
+          /* blow away the consuming op list */
+          RUU[RUU_index].odep_list[i] = NULL;
+        }
+! 
+!       /* reset the func. unit used by this instr -- if fu is occupied,
+!        * it will be free for the NEXT cycle.  This simple mechanism
+!        * works because we know all later insts that might use this
+!        * fu get squashed, too. */
+!       if (RUU[RUU_index].fu->master->busy != 0)
+!       RUU[RUU_index].fu->master->busy = 1;
+! 
+        /* squash this RUU entry */
+        RUU[RUU_index].tag++;
+  
+        /* indicate in pipetrace that this instruction was squashed */
+        ptrace_endinst(RUU[RUU_index].ptrace_seq);
+***************
+*** 2282,2293 ****
+  
+    /* revert create vector back to last precise create vector state, NOTE:
+       this is accomplished by resetting all the copied-on-write bits in the
+       USE_SPEC_CV bit vector */
+    BITMAP_CLEAR_MAP(use_spec_cv, CV_BMAP_SZ);
+- 
+-   /* FIXME: could reset functional units at squash time */
+  }
+  
+  
+  /*
+   *  RUU_WRITEBACK() - instruction result writeback pipeline stage
+--- 2300,2309 ----
+

@@ -1,0 +1,1014 @@
+Subject: Perfect caches
+   Date: Wed, 12 Nov 1997 08:12:12 -0800 (PST)
+   From: Kevin Skadron <skadron@cs.princeton.edu>
+
+Received: from ormail.intel.com by ichips.intel.com (8.7.4/jIII)
+        id KAA19290; Mon, 24 Feb 1997 10:47:06 -0800 (PST)
+Received: from CS.Princeton.EDU (CS.Princeton.EDU [128.112.136.10])
+          by ormail.intel.com (8.8.4/8.8.4) with ESMTP
+          id KAA24792 for <taustin@ichips.intel.com>; Mon, 24 Feb 1997 10:53:01 -0800 (PST)
+Received: from dynastar.CS.Princeton.EDU (dynastar [128.112.168.3]) by CS.Princeton.EDU (8.7.6/8.7.3) with SMTP id NAA01998; Mon, 24 Feb 1997 13:49:48 -0500 (EST)
+Received: by dynastar.CS.Princeton.EDU (8.6.12/CS-Client)
+        id NAA19147; Mon, 24 Feb 1997 13:49:47 -0500
+From: Kevin Skadron <skadron@CS.Princeton.EDU>
+Message-Id: <199702241849.NAA19147@dynastar.CS.Princeton.EDU>
+Subject: Perfect caches
+To: taustin@ichips.intel.com (Todd Austin),
+         psa@CS.Princeton.EDU (Pritpal S. Ahuja)
+Date: Mon, 24 Feb 1997 13:49:46 -0500 (EST)
+X-Mailer: ELM [version 2.4 PL24 PGP3 *ALPHA*]
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Length: 28825
+
+I added some code to make the cycle behavior of sim-outorder 
+behave as though a given level of cache is perfect.  The cache is
+still called normally and so collects normal hit-miss statistics;
+just that the latency it returns to sim-outorder is thrown away in
+favor of the hit latency.  I also added a few counters to the cache
+module for debugging that seem helpful in general, so I left them in;
+also I added a counter for hits on the LSQ (but only hits that
+correspond to valid addresses are counted).  Note that all the changes
+to permit perfect-cache simulation allow for simulation of perfect
+TLBs, too.
+
+Here are the diffs in case you want them, with 5 lines of context.
+The changes to cache.{h,c} are pretty minor; the ones to sim-outorder.c
+are longer but still straightforward.
+
+--Kevin
+
+---------------
+cache.h
+---------------
+*** 1.1 1997/02/16 22:23:54
+--- 1.2 1997/02/24 18:03:41
+***************
+*** 47,59 ****
+   * and improve what you give them.
+   *
+   * INTERNET: dburger@cs.wisc.edu
+   * US Mail:  1210 W. Dayton Street, Madison, WI 53706
+   *
+!  * $Id: skadron.perfcache,v 1.1.1.1 2000/11/29 14:53:54 cu-cs Exp $
+   *
+   * $Log: skadron.perfcache,v $
+   * Revision 1.1.1.1  2000/11/29 14:53:54  cu-cs
+   * Grand unification of arm sources.
+   *
+   *
+   * Revision 1.1.1.1  2000/05/26 15:21:54  taustin
+   * SimpleScalar Tool Set
+   *
+   *
+   * Revision 1.1  1997/02/16  22:23:54  skadron
+   * Initial revision
+   *
+   * Revision 1.3  1997/01/06  15:57:55  taustin
+   * comments updated
+--- 47,63 ----
+   * and improve what you give them.
+   *
+   * INTERNET: dburger@cs.wisc.edu
+   * US Mail:  1210 W. Dayton Street, Madison, WI 53706
+   *
+!  * $Id: skadron.perfcache,v 1.1.1.1 2000/11/29 14:53:54 cu-cs Exp $
+   *
+   * $Log: skadron.perfcache,v $
+   * Revision 1.1.1.1  2000/11/29 14:53:54  cu-cs
+   * Grand unification of arm sources.
+   *
+   *
+   * Revision 1.1.1.1  2000/05/26 15:21:54  taustin
+   * SimpleScalar Tool Set
+   *
+   *
++  * Revision 1.2  1997/02/24  18:03:41  skadron
++  * Added some counters: reads and writes, as well as read_hits.  Added a
++  *    'perfect' parameter, too.
++  *
+   * Revision 1.1  1997/02/16  22:23:54  skadron
+   * Initial revision
+   *
+   * Revision 1.3  1997/01/06  15:57:55  taustin
+   * comments updated
+***************
+*** 166,175 ****
+--- 170,181 ----
+    int balloc;                 /* maintain cache contents? */
+    int usize;                  /* user allocated data size */
+    int assoc;                  /* cache associativity */
+    enum cache_policy policy;   /* cache replacement policy */
+    unsigned long hit_latency;  /* cache hit latency */
++   int perfect;                        /* is cache perfect (missless) or not 
++                                * NOTE: not currently used             */
+  
+    /* miss/replacement handler, read/write BSIZE bytes starting at BADDR
+       from/into cache block BLK, returns the latency of the operation
+       if initiated at NOW, returned latencies indicate how long it takes
+       for the cache access to continue (e.g., fill a write buffer), the
+***************
+*** 205,214 ****
+--- 211,223 ----
+                                   by the miss handler */
+  
+    /* per-cache stats */
+    SS_COUNTER_TYPE hits;               /* total number of hits */
+    SS_COUNTER_TYPE misses;     /* total number of misses */
++   SS_COUNTER_TYPE reads;      /* total number of read accesses */
++   SS_COUNTER_TYPE read_hits;  /* total number of reads that are hits */
++   SS_COUNTER_TYPE writes;     /* total number of write accesses */
+    SS_COUNTER_TYPE replacements;       /* total number of replacements at misses */
+    SS_COUNTER_TYPE writebacks; /* total number of writebacks at misses */
+    SS_COUNTER_TYPE invalidations; /* total number of external invalidations */
+  
+    /* last block to hit, used to optimize cache hit processing */
+***************
+*** 234,243 ****
+--- 243,256 ----
+                                            SS_ADDR_TYPE baddr, int bsize,
+                                            struct cache_blk *blk,
+                                            SS_TIME_TYPE now),
+             unsigned long hit_latency);/* latency in cycles for a hit */
+  
++ /* Make a cache behave perfectly; should be called in conjunction with
++  * cache_create(); */
++ void cache_set_perfect(struct cache *cp);
++ 
+  /* parse policy */
+  enum cache_policy                     /* replacement policy enum */
+  cache_char2policy(char c);            /* replacement policy as a char */
+  
+  /* print cache configuration */
+
+---------------
+cache.c
+---------------
+*** 1.1 1997/02/16 22:23:54
+--- 1.2 1997/02/24 18:04:30
+***************
+*** 47,59 ****
+   * and improve what you give them.
+   *
+   * INTERNET: dburger@cs.wisc.edu
+   * US Mail:  1210 W. Dayton Street, Madison, WI 53706
+   *
+!  * $Id: skadron.perfcache,v 1.1.1.1 2000/11/29 14:53:54 cu-cs Exp $
+   *
+   * $Log: skadron.perfcache,v $
+   * Revision 1.1.1.1  2000/11/29 14:53:54  cu-cs
+   * Grand unification of arm sources.
+   *
+   *
+   * Revision 1.1.1.1  2000/05/26 15:21:54  taustin
+   * SimpleScalar Tool Set
+   *
+   *
+   * Revision 1.1  1997/02/16  22:23:54  skadron
+   * Initial revision
+   *
+   * Revision 1.3  1997/01/06  15:56:20  taustin
+   * comments updated
+--- 47,63 ----
+   * and improve what you give them.
+   *
+   * INTERNET: dburger@cs.wisc.edu
+   * US Mail:  1210 W. Dayton Street, Madison, WI 53706
+   *
+!  * $Id: skadron.perfcache,v 1.1.1.1 2000/11/29 14:53:54 cu-cs Exp $
+   *
+   * $Log: skadron.perfcache,v $
+   * Revision 1.1.1.1  2000/11/29 14:53:54  cu-cs
+   * Grand unification of arm sources.
+   *
+   *
+   * Revision 1.1.1.1  2000/05/26 15:21:54  taustin
+   * SimpleScalar Tool Set
+   *
+   *
++  * Revision 1.2  1997/02/24  18:04:30  skadron
++  * Added counters for reads, writes, and read-hits.  Added initialization
++  *    of perfect-cache param, but it's not currently used for anything.
++  *
+   * Revision 1.1  1997/02/16  22:23:54  skadron
+   * Initial revision
+   *
+   * Revision 1.3  1997/01/06  15:56:20  taustin
+   * comments updated
+  
+***************
+*** 322,331 ****
+--- 326,336 ----
+    cp->balloc = balloc;
+    cp->usize = usize;
+    cp->assoc = assoc;
+    cp->policy = policy;
+    cp->hit_latency = hit_latency;
++   cp->perfect = FALSE;
+  
+    /* miss/replacement functions */
+    cp->blk_access_fn = blk_access_fn;
+  
+    /* compute derived parameters */
+***************
+*** 347,356 ****
+--- 352,364 ----
+    debug("%s: cp->tag_mask  = 0x%08x", cp->tag_mask);
+  
+    /* initialize cache stats */
+    cp->hits = 0;
+    cp->misses = 0;
++   cp->reads = 0;
++   cp->writes = 0;
++   cp->read_hits = 0;
+    cp->replacements = 0;
+    cp->writebacks = 0;
+    cp->invalidations = 0;
+  
+    /* blow away the last block accessed */
+***************
+*** 411,420 ****
+--- 419,433 ----
+        }
+      }
+    return cp;
+  }
+  
++ void cache_set_perfect(struct cache *cp)
++ {
++   cp->perfect = TRUE;
++ }
++ 
+  /* parse policy */
+  enum cache_policy                     /* replacement policy enum */
+  cache_char2policy(char c)             /* replacement policy as a char */
+  {
+    switch (c) {
+***************
+*** 455,469 ****
+    else
+      name = cp->name;
+  
+    sprintf(buf, "%s.accesses", name);
+    sprintf(buf1, "%s.hits + %s.misses", name, name);
+!   stat_reg_formula(sdb, buf, "total number of accesses", buf1, NULL);
+    sprintf(buf, "%s.hits", name);
+    stat_reg_llong(sdb, buf, "total number of hits", &cp->hits, 0, NULL);
+    sprintf(buf, "%s.misses", name);
+    stat_reg_llong(sdb, buf, "total number of misses", &cp->misses, 0, NULL);
+    sprintf(buf, "%s.replacements", name);
+    stat_reg_llong(sdb, buf, "total number of replacements",
+                 &cp->replacements, 0, NULL);
+    sprintf(buf, "%s.writebacks", name);
+    stat_reg_llong(sdb, buf, "total number of writebacks",
+--- 468,489 ----
+    else
+      name = cp->name;
+  
+    sprintf(buf, "%s.accesses", name);
+    sprintf(buf1, "%s.hits + %s.misses", name, name);
+!   stat_reg_formula(sdb, buf, "total number of accesses", buf1, "%12.0f");
+!   sprintf(buf, "%s.reads", name);
+!   stat_reg_llong(sdb, buf, "# of read accesses", &cp->reads, 0, NULL);
+!   sprintf(buf, "%s.writes", name);
+!   stat_reg_llong(sdb, buf, "# of write accesses", &cp->writes, 0, NULL);
+    sprintf(buf, "%s.hits", name);
+    stat_reg_llong(sdb, buf, "total number of hits", &cp->hits, 0, NULL);
+    sprintf(buf, "%s.misses", name);
+    stat_reg_llong(sdb, buf, "total number of misses", &cp->misses, 0, NULL);
++   sprintf(buf, "%s.read_hits", name);
++   stat_reg_llong(sdb, buf, "total number of read hits", 
++                &cp->read_hits, 0, NULL);
+    sprintf(buf, "%s.replacements", name);
+    stat_reg_llong(sdb, buf, "total number of replacements",
+                 &cp->replacements, 0, NULL);
+    sprintf(buf, "%s.writebacks", name);
+    stat_reg_llong(sdb, buf, "total number of writebacks",
+***************
+*** 535,544 ****
+--- 555,570 ----
+  
+    /* access must fit in cache block */
+    if ((addr + nbytes) > ((addr & ~cp->blk_mask) + cp->bsize))
+      fatal("cache: access error: access spans block, addr 0x%08x", addr);
+  
++   /* Update read/write counts */
++   if (cmd == Read)
++     cp->reads++;
++   else
++     cp->writes++;
++ 
+    /* permissions are checked on cache misses */
+  
+    /* check for a fast hit: access to same block */
+    if (CACHE_TAGSET(cp, addr) == cp->last_tagset)
+      {
+***************
+*** 665,674 ****
+--- 691,702 ----
+  
+   cache_hit: /* slow hit handler */
+    
+    /* **HIT** */
+    cp->hits++;
++   if (cmd == Read)
++     cp->read_hits++;
+  
+    /* copy data out of cache block, if block exists */
+    if (cp->balloc)
+      {
+        CACHE_BCOPY(cmd, blk, bofs, p, nbytes);
+***************
+*** 700,709 ****
+--- 728,739 ----
+  
+   cache_fast_hit: /* fast hit handler */
+    
+    /* **FAST HIT** */
+    cp->hits++;
++   if (cmd == Read)
++     cp->read_hits++;
+  
+    /* copy data out of cache block, if block exists */
+    if (cp->balloc)
+      {
+        CACHE_BCOPY(cmd, blk, bofs, p, nbytes);
+
+---------------
+sim-outorder.c
+---------------
+*** 1.5 1997/02/23 21:52:16
+--- 1.7 1997/02/24 18:40:30
+***************
+*** 47,59 ****
+   * and improve what you give them.
+   *
+   * INTERNET: dburger@cs.wisc.edu
+   * US Mail:  1210 W. Dayton Street, Madison, WI 53706
+   *
+!  * $Id: skadron.perfcache,v 1.1.1.1 2000/11/29 14:53:54 cu-cs Exp $
+   *
+   * $Log: skadron.perfcache,v $
+   * Revision 1.1.1.1  2000/11/29 14:53:54  cu-cs
+   * Grand unification of arm sources.
+   *
+   *
+   * Revision 1.1.1.1  2000/05/26 15:21:54  taustin
+   * SimpleScalar Tool Set
+   *
+   *
+   * Revision 1.5  1997/02/23  21:52:16  skadron
+   * Distinguished between Ld and St ports, and between FPMUL and
+   *     FPDIV/SQRT ports.  Made default # of FPMUL ports be 2.
+   *
+   * Revision 1.4  1997/02/23  21:24:58  skadron
+--- 47,67 ----
+   * and improve what you give them.
+   *
+   * INTERNET: dburger@cs.wisc.edu
+   * US Mail:  1210 W. Dayton Street, Madison, WI 53706
+   *
+!  * $Id: skadron.perfcache,v 1.1.1.1 2000/11/29 14:53:54 cu-cs Exp $
+   *
+   * $Log: skadron.perfcache,v $
+   * Revision 1.1.1.1  2000/11/29 14:53:54  cu-cs
+   * Grand unification of arm sources.
+   *
+   *
+   * Revision 1.1.1.1  2000/05/26 15:21:54  taustin
+   * SimpleScalar Tool Set
+   *
+   *
++  * Revision 1.7  1997/02/24  18:40:30  skadron
++  * Previous version had perfect-L1s right, but perfect-L2s weren't quite right.
++  *    Fixed.
++  *
++  * Revision 1.6  1997/02/24  02:01:41  skadron
++  * Added option to make caches and TLBs perfect for cycle-counting
++  * purposes.
++  *
+   * Revision 1.5  1997/02/23  21:52:16  skadron
+   * Distinguished between Ld and St ports, and between FPMUL and
+   *     FPDIV/SQRT ports.  Made default # of FPMUL ports be 2.
+   *
+   * Revision 1.4  1997/02/23  21:24:58  skadron
+***************
+*** 103,112 ****
+--- 111,137 ----
+   * processor with a two-level memory system and speculative execution support.
+   * This simulator is a performance simulator, tracking the latency of all
+   * pipeline operations.
+   */
+  
++ /*
++  * Notes on perfect-cache and perfect-TLB simulation:
++  *    Perfectness here is simulated by making the access to the perfect
++  * level take as long as a hit, regardless of whether it is a hit.  This
++  * is done by ignoring the latency of the operation, setting it instead to
++  * the hit latency.  The operation is still performed, however, so that
++  * the cache/TLB stats still report accurate counts of hits vs. misses
++  * and the like.  Note these counts may be slightly perturbed, as changing
++  * timing for events can affect cache behavior, especially bus utilization.
++  *    For L1 caches and for the TLBs, perfectness of this type is easily
++  * simulated in this file by making the calls to cache_access() but
++  * replacing the returned latency with the hit latency.  For L2 caches,
++  * a similar technique is followed, but in the L1 miss-handlers.  That
++  * way L1->L2 bus contention and L1->L2 writebacks are still correctly 
++  * modeled.
++  */
++ 
+  
+  /*
+   * simulator options
+   */
+  
+***************
+*** 151,178 ****
+--- 176,207 ----
+  /* load/store queue (LSQ) size */
+  static int LSQ_size = 4;
+  
+  /* l1 data cache config, i.e., {<config>|none} */
+  static char *cache_dl1_opt;
++ static int cache_dl1_perfect;
+  
+  /* l1 data cache hit latency (in cycles) */
+  static int cache_dl1_lat;
+  
+  /* l2 data cache config, i.e., {<config>|none} */
+  static char *cache_dl2_opt;
++ static int cache_dl2_perfect;
+  
+  /* l2 data cache hit latency (in cycles) */
+  static int cache_dl2_lat;
+  
+  /* l1 instruction cache config, i.e., {<config>|dl1|dl2|none} */
+  static char *cache_il1_opt;
++ static int cache_il1_perfect;
+  
+  /* l1 instruction cache hit latency (in cycles) */
+  static int cache_il1_lat;
+  
+  /* l2 instruction cache config, i.e., {<config>|dl1|dl2|none} */
+  static char *cache_il2_opt;
++ static int cache_il2_perfect;
+  
+  /* l2 instruction cache hit latency (in cycles) */
+  static int cache_il2_lat;
+  
+  /* flush caches on system calls */
+***************
+*** 193,202 ****
+--- 222,234 ----
+  static char *itlb_opt;
+  
+  /* data TLB config, i.e., {<config>|none} */
+  static char *dtlb_opt;
+  
++ /* Are tlb's perfect? */
++ static int tlb_perfect;
++ 
+  /* inst/data TLB miss latency (in cycles) */
+  static int tlb_miss_lat;
+  
+  /* total number of integer ALU's available */
+  static int res_ialu;
+***************
+*** 340,357 ****
+  static SS_COUNTER_TYPE sim_num_branches = 0;
+  
+  /* total number of branches executed */
+  static SS_COUNTER_TYPE sim_total_branches = 0;
+  
+  /* cycle counter */
+  static SS_TIME_TYPE sim_cycle = 0;
+  
+  /* Priming info */
+  static int done_priming = FALSE;
+  static SS_TIME_TYPE primed_cycles = 0;
+  
+- 
+  /*
+   * simulator state variables
+   */
+  
+  /* instruction sequence counter, used to assign unique id's to insts */
+--- 372,391 ----
+  static SS_COUNTER_TYPE sim_num_branches = 0;
+  
+  /* total number of branches executed */
+  static SS_COUNTER_TYPE sim_total_branches = 0;
+  
++ /* total number of LSQ-fulfilled loads */
++ static SS_COUNTER_TYPE lsq_hits = 0;
++ 
+  /* cycle counter */
+  static SS_TIME_TYPE sim_cycle = 0;
+  
+  /* Priming info */
+  static int done_priming = FALSE;
+  static SS_TIME_TYPE primed_cycles = 0;
+  
+  /*
+   * simulator state variables
+   */
+  
+  /* instruction sequence counter, used to assign unique id's to insts */
+***************
+*** 442,451 ****
+--- 476,489 ----
+    if (cache_dl2)
+      {
+        /* access next level of data cache hierarchy */
+        lat = cache_access(cache_dl2, cmd, baddr, NULL, bsize,
+                         /* now */now, /* pudata */NULL, /* repl addr */NULL);
++ 
++       if (cache_dl2_perfect)
++       lat = cache_dl2_lat;
++ 
+        if (cmd == Read)
+        return lat;
+        else
+        {
+          /* FIXME: unlimited write buffers */
+***************
+*** 496,505 ****
+--- 534,547 ----
+  if (cache_il2)
+      {
+        /* access next level of inst cache hierarchy */
+        lat = cache_access(cache_il2, cmd, baddr, NULL, bsize,
+                         /* now */now, /* pudata */NULL, /* repl addr */NULL);
++ 
++       if (cache_il2_perfect)
++       lat = cache_il2_lat;
++ 
+        if (cmd == Read)
+        return lat;
+        else
+        panic("writes to instruction memory not supported");
+      }
+***************
+*** 707,716 ****
+--- 749,763 ----
+    opt_reg_int(odb, "-cache:dl1lat",
+              "l1 data cache hit latency (in cycles)",
+              &cache_dl1_lat, /* default */1,
+              /* print */TRUE, /* format */NULL);
+  
++   opt_reg_flag(odb, "-cache:dl1:perfect",
++              "Whether L1 D-cache is perfect",
++              &cache_dl1_perfect, /* default */FALSE,
++              /* print */TRUE, /* format */NULL);
++ 
+    opt_reg_string(odb, "-cache:dl2",
+                 "l2 data cache config, i.e., {<config>|none}",
+                 &cache_dl2_opt, "ul2:1024:64:4:l",
+                 /* print */TRUE, NULL);
+  
+***************
+*** 717,726 ****
+--- 764,778 ----
+    opt_reg_int(odb, "-cache:dl2lat",
+              "l2 data cache hit latency (in cycles)",
+              &cache_dl2_lat, /* default */6,
+              /* print */TRUE, /* format */NULL);
+  
++   opt_reg_flag(odb, "-cache:dl2:perfect",
++              "Whether L2 D-cache is perfect",
++              &cache_dl2_perfect, /* default */FALSE,
++              /* print */TRUE, /* format */NULL);
++ 
+    opt_reg_string(odb, "-cache:il1",
+                 "l1 inst cache config, i.e., {<config>|dl1|dl2|none}",
+                 &cache_il1_opt, "il1:512:32:1:l",
+                 /* print */TRUE, NULL);
+  
+***************
+*** 741,755 ****
+--- 793,817 ----
+    opt_reg_int(odb, "-cache:il1lat",
+              "l1 instruction cache hit latency (in cycles)",
+              &cache_il1_lat, /* default */1,
+              /* print */TRUE, /* format */NULL);
+  
++   opt_reg_flag(odb, "-cache:il1:perfect",
++              "Whether L1 I-cache is perfect",
++              &cache_il1_perfect, /* default */FALSE,
++              /* print */TRUE, /* format */NULL);
++ 
+    opt_reg_string(odb, "-cache:il2",
+                 "l2 instruction cache config, i.e., {<config>|dl2|none}",
+                 &cache_il2_opt, "dl2",
+                 /* print */TRUE, NULL);
+  
++   opt_reg_flag(odb, "-cache:il2:perfect",
++              "Whether L2 I-cache is perfect",
++              &cache_il2_perfect, /* default */FALSE,
++              /* print */TRUE, /* format */NULL);
++ 
+    opt_reg_int(odb, "-cache:il2lat",
+              "l2 instruction cache hit latency (in cycles)",
+              &cache_il2_lat, /* default */6,
+              /* print */TRUE, /* format */NULL);
+  
+***************
+*** 784,793 ****
+--- 846,860 ----
+    opt_reg_int(odb, "-tlb:lat",
+              "inst/data TLB miss latency (in cycles)",
+              &tlb_miss_lat, /* default */30,
+              /* print */TRUE, /* format */NULL);
+  
++   opt_reg_flag(odb, "-tlb:perfect",
++              "Whether TLB's are perfect",
++              &tlb_perfect, /* default */FALSE,
++              /* print */TRUE, /* format */NULL);
++ 
+    /* resource configuration */
+  
+    opt_reg_int(odb, "-res:ialu",
+              "total number of integer ALU's available",
+              &res_ialu, /* default */fu_config[FU_IALU_INDEX].quantity,
+***************
+*** 928,937 ****
+--- 995,1006 ----
+                 name, &nsets, &bsize, &assoc, &c) != 5)
+        fatal("bad l1 D-cache parms: <name>:<nsets>:<bsize>:<assoc>:<repl>");
+        cache_dl1 = cache_create(name, nsets, bsize, /* balloc */FALSE,
+                               /* usize */0, assoc, cache_char2policy(c),
+                               dl1_access_fn, /* hit lat */cache_dl1_lat);
++       if (cache_dl1_perfect)
++       cache_set_perfect(cache_dl1);
+  
+        /* is the level 2 D-cache defined? */
+        if (!mystricmp(cache_dl2_opt, "none"))
+        cache_dl2 = NULL;
+        else
+***************
+*** 941,950 ****
+--- 1010,1021 ----
+            fatal("bad l2 D-cache parms: "
+                  "<name>:<nsets>:<bsize>:<assoc>:<repl>");
+          cache_dl2 = cache_create(name, nsets, bsize, /* balloc */FALSE,
+                                   /* usize */0, assoc, cache_char2policy(c),
+                                   dl2_access_fn, /* hit lat */cache_dl2_lat);
++         if (cache_dl2_perfect)
++           cache_set_perfect(cache_dl2);
+        }
+      }
+  
+    /* use a level 1 I-cache? */
+    if (!mystricmp(cache_il1_opt, "none"))
+***************
+*** 960,969 ****
+--- 1031,1046 ----
+      {
+        if (!cache_dl1)
+        fatal("I-cache l1 cannot access D-cache l1 as it's undefined");
+        cache_il1 = cache_dl1;
+  
++       if (cache_il1_perfect || cache_dl1_perfect)
++       {
++         if (!cache_dl1_perfect || !cache_il1_perfect)
++           fatal("Unified l1 must be perfect for both data and instructions");
++       }
++ 
+        /* the level 2 I-cache cannot be defined */
+        if (strcmp(cache_il2_opt, "none"))
+        fatal("the l1 inst cache must defined if the l2 cache is defined");
+        cache_il2 = NULL;
+      }
+***************
+*** 971,980 ****
+--- 1048,1063 ----
+      {
+        if (!cache_dl2)
+        fatal("I-cache l1 cannot access D-cache l2 as it's undefined");
+        cache_il1 = cache_dl2;
+  
++       if (cache_il1_perfect || cache_dl2_perfect)
++       {
++         if (!cache_dl2_perfect || !cache_il1_perfect)
++           fatal("Unified L1-I$ and L2-D$ must be perfect for both cases");
++       }
++ 
+        /* the level 2 I-cache cannot be defined */
+        if (strcmp(cache_il2_opt, "none"))
+        fatal("the l1 inst cache must defined if the l2 cache is defined");
+        cache_il2 = NULL;
+      }
+***************
+*** 984,1002 ****
+--- 1067,1094 ----
+                 name, &nsets, &bsize, &assoc, &c) != 5)
+        fatal("bad l1 I-cache parms: <name>:<nsets>:<bsize>:<assoc>:<repl>");
+        cache_il1 = cache_create(name, nsets, bsize, /* balloc */FALSE,
+                               /* usize */0, assoc, cache_char2policy(c),
+                               il1_access_fn, /* hit lat */cache_il1_lat);
++       if (cache_il1_perfect)
++       cache_set_perfect(cache_il1);
+  
+        /* is the level 2 D-cache defined? */
+        if (!mystricmp(cache_il2_opt, "none"))
+        cache_il2 = NULL;
+        else if (!mystricmp(cache_il2_opt, "dl2"))
+        {
+          if (!cache_dl2)
+            fatal("I-cache l2 cannot access D-cache l2 as it's undefined");
+          cache_il2 = cache_dl2;
++ 
++         if (cache_il2_perfect || cache_dl2_perfect)
++           {
++             if (!cache_dl2_perfect || !cache_il2_perfect)
++               fatal("Unified l2 must be perfect for both data and "
++                     "instructions");
++           }
+        }
+        else
+        {
+          if (sscanf(cache_il2_opt, "%[^:]:%d:%d:%d:%c",
+                     name, &nsets, &bsize, &assoc, &c) != 5)
+***************
+*** 1003,1012 ****
+--- 1095,1106 ----
+            fatal("bad l2 D-cache parms: "
+                  "<name>:<nsets>:<bsize>:<assoc>:<repl>");
+          cache_il2 = cache_create(name, nsets, bsize, /* balloc */FALSE,
+                                   /* usize */0, assoc, cache_char2policy(c),
+                                   il2_access_fn, /* hit lat */cache_il2_lat);
++         if (cache_il2_perfect)
++           cache_set_perfect(cache_il2);
+        }
+      }
+  
+    /* use an I-TLB? */
+    if (!mystricmp(itlb_opt, "none"))
+***************
+*** 1018,1027 ****
+--- 1112,1123 ----
+        fatal("bad TLB parms: <name>:<nsets>:<page_size>:<assoc>:<repl>");
+        itlb = cache_create(name, nsets, bsize, /* balloc */FALSE,
+                          /* usize */sizeof(SS_ADDR_TYPE), assoc,
+                          cache_char2policy(c), itlb_access_fn,
+                          /* hit latency */1);
++       if (tlb_perfect)
++       cache_set_perfect(itlb);
+      }
+  
+    /* use a D-TLB? */
+    if (!mystricmp(dtlb_opt, "none"))
+      dtlb = NULL;
+***************
+*** 1032,1041 ****
+--- 1128,1139 ----
+        fatal("bad TLB parms: <name>:<nsets>:<page_size>:<assoc>:<repl>");
+        dtlb = cache_create(name, nsets, bsize, /* balloc */FALSE,
+                          /* usize */sizeof(SS_ADDR_TYPE), assoc,
+                          cache_char2policy(c), dtlb_access_fn,
+                          /* hit latency */1);
++       if (tlb_perfect)
++       cache_set_perfect(dtlb);      
+      }
+  
+    if (cache_dl1_lat < 1)
+      fatal("l1 data cache latency must be greater than zero");
+  
+***************
+*** 1166,1175 ****
+--- 1264,1278 ----
+  
+    /* register predictor stats */
+    if (pred)
+      bpred_reg_stats(pred, sdb);
+  
++   /* number of loads fulfilled by forwards from the LSQ */
++   stat_reg_llong(sdb, "lsq_hits",
++                "number of loads (to valid addrs) fulfulled by LSQ",
++                &lsq_hits, /* initial value */0, /* format */NULL);  
++ 
+    /* register cache stats */
+    if (cache_il1
+        && (cache_il1 != cache_dl1 && cache_il1 != cache_dl2))
+      cache_reg_stats(cache_il1, sdb);
+    if (cache_il2
+***************
+*** 2033,2051 ****
+  
+                  /* go to the data cache */
+                  if (cache_dl1)
+                    {
+                      /* commit store value to D-cache */
+                      lat =
+                        cache_access(cache_dl1, Write, (LSQ[LSQ_head].addr&~3),
+                                     NULL, 4, sim_cycle, NULL, NULL);
+                      if (lat > cache_dl1_lat)
+                        events |= PEV_CACHEMISS;
+                    }
+  
+!                 /* all loads and stores must to access D-TLB */
+!                 if (dtlb)
+                    {
+                      /* access the D-TLB */
+                      lat =
+                        cache_access(dtlb, Read, (LSQ[LSQ_head].addr & ~3),
+                                     NULL, 4, sim_cycle, NULL, NULL);
+--- 2136,2160 ----
+  
+                  /* go to the data cache */
+                  if (cache_dl1)
+                    {
+                      /* commit store value to D-cache */
++                     /* NOTE: Stores are treated as instantaneous, so we
++                      *   don't have to do anything here to simulate
++                      *   perfect caches.  */
+                      lat =
+                        cache_access(cache_dl1, Write, (LSQ[LSQ_head].addr&~3),
+                                     NULL, 4, sim_cycle, NULL, NULL);
+                      if (lat > cache_dl1_lat)
+                        events |= PEV_CACHEMISS;
+                    }
+  
+!                 /* all loads and stores must access D-TLB.  */
+!                 /* NOTE: We don't need to do any perfect-TLB fakery here 
+!                  * either, since this latency is also ignored for purposes 
+!                  * of counting cycles. */
+!                 if (dtlb) 
+                    {
+                      /* access the D-TLB */
+                      lat =
+                        cache_access(dtlb, Read, (LSQ[LSQ_head].addr & ~3),
+                                     NULL, 4, sim_cycle, NULL, NULL);
+***************
+*** 2487,2524 ****
+                                  /* access the cache if non-faulting */
+                                  load_lat =
+                                    cache_access(cache_dl1, Read,
+                                                 (rs->addr & ~3), NULL, 4,
+                                                 sim_cycle, NULL, NULL);
+                                  if (load_lat > cache_dl1_lat)
+                                    events |= PEV_CACHEMISS;
+                                }
+                              else
+                                {
+!                                 /* no caches defined, just use op latency */
+                                  load_lat = fu->oplat;
+                                }
+                            }
+  
+!                         /* all loads and stores must to access D-TLB */
+                          if (dtlb
+                              /* valid address? */
+                              && (rs->addr >= ld_data_base
+                                  && rs->addr < ld_stack_base))
+                            {
+!                             /* access the D-DLB, NOTE: this code will
+                                 initiate speculative TLB misses */
+                              tlb_lat =
+                                cache_access(dtlb, Read, (rs->addr & ~3),
+                                             NULL, 4, sim_cycle, NULL, NULL);
+                              if (tlb_lat > 1)
+                                events |= PEV_TLBMISS;
+  
+                              /* D-cache/D-TLB accesses occur in parallel */
+                              load_lat = MAX(tlb_lat, load_lat);
+                            }
+- 
+                          /* use computed cache access latency */
+                          eventq_queue_event(rs, sim_cycle + load_lat);
+  
+                          /* entered execute stage, indicate in pipe trace */
+                          ptrace_newstage(rs->ptrace_seq, PST_EXECUTE,
+--- 2596,2648 ----
+                                  /* access the cache if non-faulting */
+                                  load_lat =
+                                    cache_access(cache_dl1, Read,
+                                                 (rs->addr & ~3), NULL, 4,
+                                                 sim_cycle, NULL, NULL);
++                                 if (cache_dl1_perfect)
++                                   load_lat = cache_dl1_lat;
++ 
+                                  if (load_lat > cache_dl1_lat)
+                                    events |= PEV_CACHEMISS;
+                                }
+                              else
+                                {
+!                                 /* no caches defined, or ref to an invalid
+!                                  * address -- just use op latency */
+                                  load_lat = fu->oplat;
+                                }
+                            }
++                         else if (rs->addr >= ld_data_base
++                                  && rs->addr < ld_stack_base)
++                           {
++                             /* value was forwarded from LSQ -- count it,
++                              * so long as it's a valid ref */
++                             lsq_hits++;
++                           }
++                         /* else ref to an invalid address that got
++                          * forwarded in LSQ */
+  
+!                         /* all loads and stores must access D-TLB */
+                          if (dtlb
+                              /* valid address? */
+                              && (rs->addr >= ld_data_base
+                                  && rs->addr < ld_stack_base))
+                            {
+!                             /* access the D-TLB, NOTE: this code will
+                                 initiate speculative TLB misses */
+                              tlb_lat =
+                                cache_access(dtlb, Read, (rs->addr & ~3),
+                                             NULL, 4, sim_cycle, NULL, NULL);
++                             if (tlb_perfect)
++                               tlb_lat = 1;
++ 
+                              if (tlb_lat > 1)
+                                events |= PEV_TLBMISS;
+  
+                              /* D-cache/D-TLB accesses occur in parallel */
+                              load_lat = MAX(tlb_lat, load_lat);
+                            }
+                          /* use computed cache access latency */
+                          eventq_queue_event(rs, sim_cycle + load_lat);
+  
+                          /* entered execute stage, indicate in pipe trace */
+                          ptrace_newstage(rs->ptrace_seq, PST_EXECUTE,
+***************
+*** 3784,3805 ****
+              /* access the I-cache */
+              lat =
+                cache_access(cache_il1, Read, fetch_regs_PC,
+                             NULL, sizeof(SS_INST_TYPE), sim_cycle,
+                             NULL, NULL);
+              if (lat > cache_il1_lat)
+                last_inst_missed = TRUE;
+            }
+- 
+          if (itlb)
+            {
+              /* access the I-TLB, NOTE: this code will initiate
+                 speculative TLB misses */
+              tlb_lat =
+                cache_access(itlb, Read, fetch_regs_PC,
+                             NULL, sizeof(SS_INST_TYPE), sim_cycle,
+                             NULL, NULL);
+              if (tlb_lat > 1)
+                last_inst_tmissed = TRUE;
+  
+              /* I-cache/I-TLB accesses occur in parallel */
+              lat = MAX(tlb_lat, lat);
+--- 3908,3934 ----
+              /* access the I-cache */
+              lat =
+                cache_access(cache_il1, Read, fetch_regs_PC,
+                             NULL, sizeof(SS_INST_TYPE), sim_cycle,
+                             NULL, NULL);
++             if (cache_il1_perfect)
++               lat = cache_il1_lat;
++ 
+              if (lat > cache_il1_lat)
+                last_inst_missed = TRUE;
+            }
+          if (itlb)
+            {
+              /* access the I-TLB, NOTE: this code will initiate
+                 speculative TLB misses */
+              tlb_lat =
+                cache_access(itlb, Read, fetch_regs_PC,
+                             NULL, sizeof(SS_INST_TYPE), sim_cycle,
+                             NULL, NULL);
++             if (tlb_perfect)
++               tlb_lat = 1;
++ 
+              if (tlb_lat > 1)
+                last_inst_tmissed = TRUE;
+  
+              /* I-cache/I-TLB accesses occur in parallel */
+              lat = MAX(tlb_lat, lat);
+***************
+*** 3810,3820 ****
+            {
+              /* I-cache miss, block fetch until it is resolved */
+              ruu_fetch_issue_delay += lat - 1;
+              break;
+            }
+!         /* else, I-cache/I-TLB hit */
+        }
+        else
+        {
+          /* fetch PC is bogus, send a NOP down the pipeline */
+          inst = SS_NOP_INST;
+--- 3939,3949 ----
+            {
+              /* I-cache miss, block fetch until it is resolved */
+              ruu_fetch_issue_delay += lat - 1;
+              break;
+            }
+!         /* else, I-cache/I-TLB hit or "fake hit" due to perfectness */
+        }
+        else
+        {
+          /* fetch PC is bogus, send a NOP down the pipeline */
+          inst = SS_NOP_INST;
+

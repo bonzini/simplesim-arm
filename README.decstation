@@ -1,0 +1,23 @@
+Subject: Re: Simplescalar libraries
+   Date: Tue, 16 Sep 1997 11:03:06 -0700
+   From: farrens@cs.ucdavis.edu
+     To: farrens@cs.ucdavis.edu, taustin@ichips.intel.com
+     CC: dburger@cs.wisc.edu, farrens@cs.ucdavis.edu
+
+        As long as I am at it, I will pass along a couple of other things I
+have found, that you may want to fix in 2.1:
+
+1.  There is a problem with <termio.h> - it calls <sys/termio.h>, but there
+isn't a <sys/termio.h>.  I had to put a link in for that one on both my ULTRIX
+and LINUX setups.
+
+2.  When compiling for an Alpha running Linux, there is a problem in
+"syscall.c" - there is (apparently) no <bsd/sgtty.h> on Linux for the Alpha.
+I commented it out, and it worked.  (This is Redhat 4.2, I think).
+
+        So, you can now list DECstation running Ultrix 4.4 and the 21164 Alpha
+running Linux as tested systems as well.
+
+Mf
+
+

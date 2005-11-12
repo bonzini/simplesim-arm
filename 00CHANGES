@@ -1,0 +1,29 @@
+
+- Alpha instruction set extensions (MVI, BWX, AMASK, IMPLVER, etc...)
+- extensive extensions to the Alpha OSF system call model (from Calder,
+  Plakal, Austin, etc...)
+- 21-bit conditional branch offset fix
+- divide by zero allowed for floating point operations
+- sim-outorder now stops after sim_num_insn
+- DECLARE_FAULT fixed in jump table version of sim-fast
+- myprintf() buffer overflows less likely
+- options package now uses correct precision when printing double's
+- pipetrace.pl now works with perl 5.x
+- cross-endian execution support added (w/ limited syscall support)
+- debug mode support restored in sim-outorder
+- sigreturn event tracing now works
+- event tracing (EIO) now works for traces longer than 2^32 insts
+- periodic checkpointing (-perdump) support added to sim-eio
+- renice support no longer interferes with extern renice mechanisms
+- decoders are more bulletproof (check for array overflows)
+- speculative execution should now be deterministic (uninit bugs fixed...)
+- sim-outorder now limits execution to number of non-spec insts (!spec)
+- added retirement tracing to sim-outorder (enable with -v)
+
+TO TEST:
+
+	- same-endian vs. cross-endian
+	- live syscalls vs. EIO traces
+	- Alpha vs. PISA
+	- tests vs. SPEC
+

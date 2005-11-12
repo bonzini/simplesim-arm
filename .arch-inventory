@@ -1,0 +1,7 @@
+precious ^config\.h$
+precious ^loader\.c$
+precious ^machine\.(c|h|def)$
+precious ^symbol\.c$
+precious ^syscall\.c$
+precious ^sim-[a-z]*$
+precious ^tests$

@@ -1,0 +1,96 @@
+** A scheduler enhancement from Kevin Skadron (skadron@cs.princeton.edu),
+currently not installed:
+
+Kevin Skadron writes:
+> Minor bug, but the aggressive issue policy readyq_enqueue is supposed
+> to implement doesn't look like it matches the code.
+> 
+> Here's the code:
+>   /* locate insertion point */
+>   if (rs->in_LSQ || SS_OP_FLAGS(rs->op) & (F_LONGLAT|F_CTRL))
+>     {
+>       /* insert loads/stores and long latency ops at the head of the queue */
+>       prev = NULL;
+>       node = ready_queue;
+>     }
+>   else
+>     {
+>       /* otherwise insert in program order (earliest seq first) */
+>       for (prev=NULL, node=ready_queue;
+>            node && node->x.seq < rs->seq;
+>            prev=node, node=node->next);
+>     }
+> 
+>   (now it inserts the new instruction after 'prev' or at the head
+>   of the list if prev == NULL)
+> 
+> But suppose you insert several loads, and then an add comes along that
+> precedes these loads in program order.  It will go to the else clause
+> and get inserted ahead of the loads.
+> 
+> There's another minor issue, not really a bug, in the above code.  A group
+> of sequential loads that that become ready in program order (for example,
+> they're decoded after dependences have written back) will end up
+> in the ready queue in reverse program order.  This means an
+> earlier load might get issued in a later cycle than a succeeding load
+> due to issue-bandwidth constraints.  And because commit is in-order,
+> this might block commit by one or more cycles, which might have minor
+> performance consequences (RUU might fill up, etc).  So if the issue
+> policy is supposed to be oldest-first among loads/br's/long-lat-ops
+> and then oldest-first among others, loads/br's/long-lat-ops can't
+> just be inserted at the front.
+> 
+> Here's the code I came up with; I also added a flag to control
+> whether issue is aggressive as above, or plain-vanilla in-order-among-
+> ready-instructions (like the HP-8000, I think).
+> 
+>   /*
+>    * locate insertion point
+>    */
+> 
+>   if (aggressive_issue
+>       && (rs->in_LSQ || (SS_OP_FLAGS(rs->op) & (F_LONGLAT|F_CTRL))))
+>     {
+>       /* insert mem ops, br's, and long latency ops at the head of the queue
+>        * (but in program order among themselves) */
+>       for (prev=NULL, node=ready_queue ;
+>            node && node->x.seq < rs->seq
+>              && (node->rs->in_LSQ
+>                  || (SS_OP_FLAGS(node->rs->op)&(F_LONGLAT|F_CTRL))) ;
+>            prev=node, node=node->next);
+>     }
+>   else if (aggressive_issue)
+>     {
+>       /* find the end of the high-priority insts */
+>       for (prev=NULL, node=ready_queue;
+>            node && (node->rs->in_LSQ
+>                     || (SS_OP_FLAGS(node->rs->op)&(F_LONGLAT|F_CTRL)));
+>            prev=node, node=node->next);
+>     }
+>   else
+>     {
+>       prev = NULL;
+>       node = ready_queue;
+>     }
+> 
+>   /* now either (1) we've found the insertion point if this is a high-
+>    * priority inst, or (2) we've found the end of the high-priority insts,
+>    * or (3) we're doing straight in-order enqueuing.
+>    *
+>    * If (1), insert the inst.  If (2) or (3), look at seq numbers to
+>    * find the in-order insertion point. */
+> 
+>   if (!aggressive_issue
+>       || (aggressive_issue
+>           && !(rs->in_LSQ || (SS_OP_FLAGS(rs->op) & (F_LONGLAT|F_CTRL)))))
+>     {
+>       for (;
+>            node && node->x.seq < rs->seq;
+>            prev=node, node=node->next);
+>     }
+> 
+>   (now it inserts the new instruction after 'prev' or at the head
+>   of the list if prev == NULL)
+>
+>   --Kevin
+

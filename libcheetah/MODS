@@ -1,0 +1,11 @@
+
+Modifications by Todd M. Austin:
+
+	- converted main.c to libcheetah.c, this is a library version
+	  of the cheetah cache simulator
+
+	- added libcheetah.h, the interfaces used by the SimpleScalar sims
+
+	- converted all module messages to use fprintf() to a simulator
+	  supplied stream
+

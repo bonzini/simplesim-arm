@@ -1,0 +1,226 @@
+From taustin@lili.eecs.umich.edu Thu Sep  3 16:38:05 1998 -0500
+To: <postiffm@umich.edu>
+Cc: "Austin, Todd"
+Subject: RE: SimpleScalar 3.0a build question (fwd)
+Date: Thu, 3 Sep 1998 16:38:05 -0500
+Message-ID: <B38DE02578EBD111AC4200A0C95D19EE5DFCAD@ORSMSX30>
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0EBE_01BF3B45.3BBBF860"
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.2416 (9.0.2910.0)
+Importance: Normal
+X-MS-TNEF-Correlator: <B38DE02578EBD111AC4200A0C95D19EE5DFCAD@ORSMSX30>
+X-MimeOLE: Produced By Microsoft MimeOLE V5.00.2919.6600
+X-OlkEid: FB443E23286F9AD852A7D311AC6000A0C95DBAFB
+In-Reply-To: <B38DE02578EBD111AC4200A0C95D19EE6F8973@ORSMSX30>
+X-Status: 
+X-UID: 1275
+Status: RO
+
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_0EBE_01BF3B45.3BBBF860
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+
+Matt, thanks for the makefile fix, I'll use it.
+
+As for the quad_t problem, I'm starting to get messages concerning this
+on newer linux and FreeBSD systems.  Long term, I'll probably rename
+"quad_t" to "qword_t", hopefully this should clear up the problem.
+
+Three possible fixes:
+
+1) use sed to globally rename "quad_t" to something more unique.
+
+2) add to host.h:
+
+    #define quad_t		unsigned long long
+    #define squad_t 		signed long long
+
+this should provide the same effect as 1)
+
+3) copy <sys/types.h> to your build directory, comment out the conflicting
+definitions, and rebuild with "-I." to pick up the updated <sys/types.h>
+
+Let me know if any of these work.  I'll ping you first with the next
+release, to be sure that this problem gets fixed.
+
+-Todd
+--
+%% Todd Austin, taustin@ichips.intel.com, http://www.cse.ogi.edu/~taustin/
+%% MicroComputer Research Labs, Intel Corporation, Hillsboro, Oregon
+%% Opinions expressed are solely my own.  Not an Intel spokesperson. 
+
+> -----Original Message-----
+> From: Todd Austin [mailto:taustin@cse.ogi.edu]
+> Sent: Thursday, September 03, 1998 1:56 PM
+> To: Austin, Todd
+> Subject: Re: SimpleScalar 3.0a build question (fwd)
+> 
+> 
+> Forwarded message:
+> >From postiffm@umich.edu  Thu Sep  3 07:24:08 1998
+> X-Authentication-Warning: rodan.eecs.umich.edu: postiffm 
+> owned process doing -bs
+> Date: Thu, 3 Sep 1998 10:23:41 -0400 (EDT)
+> From: Matt Postiff <postiffm@umich.edu>
+> X-Sender: postiffm@rodan.eecs.umich.edu
+> To: taustin@cse.ogi.edu
+> Subject: Re: SimpleScalar 3.0a build question
+> In-Reply-To: 
+> <Pine.GSO.4.02.9809030854480.15386-100000@rodan.eecs.umich.edu>
+> Message-ID: 
+> <Pine.GSO.4.02.9809031023010.15386-100000@rodan.eecs.umich.edu>
+> MIME-Version: 1.0
+> Content-Type: TEXT/PLAIN; charset=US-ASCII
+> 
+> OK, now that I've read the instructions, I see that you link 
+> tests to the
+> appropriate directory and item 1. below is not really 
+> relevant, though you
+> could probably still change it and get away with it. 2. is still a
+> problem.
+> 
+> Matt Postiff
+> postiffm@umich.edu
+> 
+> On Thu, 3 Sep 1998, Matt Postiff wrote:
+> 
+> > 1. Change Makefile clean last line and add a line:
+> > 	# below was cd tests which caused an infinite loop since cd
+> > 	# failed and make was called without cd'ing
+> > 	cd tests-alpha $(CS) $(MAKE) "RM=$(RM)" "CS=$(CS)" 
+> clean $(CS) cd ..
+> > 	cd tests-pisa $(CS) $(MAKE) "RM=$(RM)" "CS=$(CS)" clean 
+> $(CS) cd ..
+> > 
+> > 2. How do I resolve this:
+> > 
+> > System:
+> > Linux srvrdsk1.eecs.umich.edu 2.1.106 #1 SMP Fri Jun 19 
+> 11:57:16 EDT 1998
+> > i686 unknown
+> >  OR
+> > Linux drakh.eecs.umich.edu 2.0.33 #1 Sun Feb 22 18:41:11 EST 1998 
+> > i686 unknown
+> > 
+> > Compiler:
+> > Reading specs from
+> > 
+> /nfs/srvrdsk1/t/Install/i686/Linux/lib/gcc-lib/i686-pc-linux-g
+> nu/egcs-2.91.57/specs
+> > gcc version egcs-2.91.57 19980901 (egcs-1.1 release)
+> > 
+> > % make
+> > gcc -DDEBUG -o sysprobe sysprobe.c
+> > In file included from sysprobe.c:97:
+> > host.h:110: conflicting types for `quad_t'
+> > /usr/include/sys/types.h:37: previous declaration of `quad_t'
+> > 
+> > /usr/include/sys/types.h:37 is this: 
+> > 	typedef __quad_t quad_t;
+> > 
+> > __quad_t is defined in /usr/include/gnu/types.h:
+> > 	#ifdef __GNUC__
+> > 	typedef unsigned long long int __u_quad_t;
+> > 	typedef long long int __quad_t;
+> > 
+> > Matt Postiff
+> > postiffm@umich.edu
+> > 
+> > 
+> > 
+> 
+
+------=_NextPart_000_0EBE_01BF3B45.3BBBF860
+Content-Type: application/ms-tnef;
+	name="winmail.dat"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+	filename="winmail.dat"
+
+eJ8+IjUUAQaQCAAEAAAAAAABAAEAAQeQBgAIAAAA5AQAAAAAAADoAAEIgAcAGAAAAElQTS5NaWNy
+b3NvZnQgTWFpbC5Ob3RlADEIAQ2ABAACAAAAAgACAAEGgAMADgAAAM4HCQADABAAJgAFAAQAIAEB
+A5AGALwQAAA9AAAACwACAAEAAAALACMAAAAAAAMAJgAAAAAACwApAAAAAAALACsAAAAAAAMALgAA
+AAAAAwA2AAAAAAACAUMAAQAAAE4AAAAAAAAA3KdAyMBCEBq0uQgAKy/hggEAAAAAAAAAL089SU5U
+RUwvT1U9QU1FUklDQVMwMS9DTj1XT1JLRVJTL0NOPUFVU1RJTiwgVE9ERAAAAB4ARAABAAAADQAA
+AEF1c3RpbiwgVG9kZAAAAAACAUcAAQAAADIAAABjPVVTO2E9TUNJO3A9SW50ZWw7bD1PUlNNU1gz
+MC05ODA5MDMyMTM4MDVaLTMxOTUyAAAAAgFSAAEAAAA1AAAARVg6L089SU5URUwvT1U9QU1FUklD
+QVMwMS9DTj1XT1JLRVJTL0NOPUFVU1RJTiwgVE9ERAAAAAALAFcAAAAAAAsAWAABAAAACwBZAAEA
+AAAeAHAAAQAAACcAAABTaW1wbGVTY2FsYXIgMy4wYSBidWlsZCBxdWVzdGlvbiAoZndkKQAAAgFx
+AAEAAAAWAAAAAb3XgOKXVZPPLUHuEdK5zQCgyWaAewAAHgB3AAEAAAADAAAARVgAAB4AeAABAAAA
+MgAAAC9PPUlOVEVML09VPUFNRVJJQ0FTMDEvQ049V09SS0VSUy9DTj1BVVNUSU4sIFRPREQAAAAC
+AR0MAQAAADUAAABFWDovTz1JTlRFTC9PVT1BTUVSSUNBUzAxL0NOPVdPUktFUlMvQ049QVVTVElO
+LCBUT0REAAAAAEAABg5woZMig9e9AQsAHw4BAAAAAwAjDtMMAAACAQkQAQAAAAYJAAACCQAAhxAA
+AExaRnWHezCBAwAKAHJjcGcxMjXiMgNDdGV4BUEBAwH3/wqAAqQD5AcTAoAP8wBQBFY/CFUHshEl
+DlEDAQIAY2jhCsBzZXQyBgAGwxEl9jMERhO3MBIsETMI7wn3tjsYHw4wNREiDGBjAFCzCwkBZDM2
+FlALp2MBMEUF0GECQCwgdBPgbp5rBCACEAXAHZBlIADAXmsBEAMQHmAewHgdcEkUJ2wDIHUUECBp
+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
+L95SL9GzLyZAYuAvZ2NjLeXy3lLIYNvmUiZhLcE3JmAvXuBZMP4tjyGZUNXg5ADiErVI5jH+IJ6Q
+mONAcOhpbAOPYYCQ/ijoU9OxpwNRIXH3tSpV8AMegul8LURERUJV/kdkoDPBJ3AiAjGR8JVYIP+1
+SFzgHwEe4b0xCkBz4gNS+fEJOjl3gLVINqXVsIAwr0XqHYBC4h3zYCGUJ7VIei8fsHLlMPLk5ABC
+qDr+M3eAIfGnQEdwH7BEMAWQ/4sRXaNNYvdftTn4f/mIpaIfzxO1ObmjQtIPESBfX/8hlSGUGTD8
+X0NAAUcsgTgk/6Sxy0D9iz0QWdD5hr2ugtDhAQRHTlVDAUD/3wDk7zmfI0BX0QExdQFVAjoAiv8K
+bguPtUiu/7WTsD+HN7UqCxM/y1V9FWAAAB4AQhABAAAAMgAAADxCMzhERTAyNTc4RUJEMTExQUM0
+MjAwQTBDOTVEMTlFRTZGODk3M0BPUlNNU1gzMD4AAAADAPE/CQQAAB4A+D8BAAAADQAAAEF1c3Rp
+biwgVG9kZAAAAAACAfk/AQAAAE4AAAAAAAAA3KdAyMBCEBq0uQgAKy/hggEAAAAAAAAAL089SU5U
+RUwvT1U9QU1FUklDQVMwMS9DTj1XT1JLRVJTL0NOPUFVU1RJTiwgVE9ERAAAAB4A+j8BAAAADQAA
+AEF1c3RpbiwgVG9kZAAAAAACAfs/AQAAAE4AAAAAAAAA3KdAyMBCEBq0uQgAKy/hggEAAAAAAAAA
+L089SU5URUwvT1U9QU1FUklDQVMwMS9DTj1XT1JLRVJTL0NOPUFVU1RJTiwgVE9ERAAAAAMA/T/k
+BAAAAwAZQAAAAAADABpAAAAAAAMAG0AAAAAAAwAcQAAAAAADAACAVqvzKU1V0BGpfACgyRH1CgAA
+AAAAoAAAAQAAAAMAC4BTq/MpTVXQEal8AKDJEfUKAAAAAEOgAAABAAAAAwAXgAggBgAAAAAAwAAA
+AAAAAEYAAAAAEIUAAAAAAAADAB2ACCAGAAAAAADAAAAAAAAARgAAAABShQAA8BMAAB4AHoAIIAYA
+AAAAAMAAAAAAAABGAAAAAFSFAAABAAAABAAAADguNQALAB+ACCAGAAAAAADAAAAAAAAARgAAAAAG
+hQAAAAAAAAMAIIAIIAYAAAAAAMAAAAAAAABGAAAAAAGFAAAAAAAACwAlgAggBgAAAAAAwAAAAAAA
+AEYAAAAAA4UAAAAAAAALACqACCAGAAAAAADAAAAAAAAARgAAAAAOhQAAAAAAAAMAK4AIIAYAAAAA
+AMAAAAAAAABGAAAAABGFAAAAAAAAAwAtgAggBgAAAAAAwAAAAAAAAEYAAAAAGIUAAAAAAAAeAD2A
+CCAGAAAAAADAAAAAAAAARgAAAAA2hQAAAQAAAAEAAAAAAAAAHgA+gAggBgAAAAAAwAAAAAAAAEYA
+AAAAN4UAAAEAAAABAAAAAAAAAB4AP4AIIAYAAAAAAMAAAAAAAABGAAAAADiFAAABAAAAAQAAAAAA
+AAALAHOACyAGAAAAAADAAAAAAAAARgAAAAAAiAAAAAAAAAsAdIALIAYAAAAAAMAAAAAAAABGAAAA
+AAWIAAAAAAAAAgH4DwEAAAAQAAAA2kWbagNn0xGsSwCgyV26+wIB+g8BAAAAEAAAANpFm2oDZ9MR
+rEsAoMlduvsCAfsPAQAAAKYAAAAAAAAAOKG7EAXlEBqhuwgAKypWwgAAUFNUUFJYLkRMTAAAAAAA
+AAAATklUQfm/uAEAqgA32W4AAABDOlxXSU5OVFxQcm9maWxlc1x0YXVzdGluXExvY2FsIFNldHRp
+bmdzXEFwcGxpY2F0aW9uIERhdGFcTWljcm9zb2Z0XE91dGxvb2tcbGlsaS5lZWNzLnVtaWNoLmVk
+dS0wMDAwMDAwMS5wc3QAAAADAP4PBQAAAAMADTT9NwAAAgF/AAEAAAAyAAAAPEIzOERFMDI1NzhF
+QkQxMTFBQzQyMDBBMEM5NUQxOUVFNURGQ0FEQE9SU01TWDMwPgAAAAMABhDogXItAwAHEOQJAAAD
+ABAQAAAAAAMAERAHAAAAHgAIEAEAAABlAAAATUFUVCxUSEFOS1NGT1JUSEVNQUtFRklMRUZJWCxJ
+TExVU0VJVEFTRk9SVEhFUVVBRFRQUk9CTEVNLElNU1RBUlRJTkdUT0dFVE1FU1NBR0VTQ09OQ0VS
+TklOR1RISVNPTk5FVwAAAADBwQ==
+
+------=_NextPart_000_0EBE_01BF3B45.3BBBF860--
+

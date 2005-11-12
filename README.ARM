@@ -1,0 +1,150 @@
+To: SimpleScalar/ARM users
+From: Todd Austin (austin@umich.edu)
+Subject: an ARMload of SimpleScalar/ARM
+
+Greetings, this version of SimpleScalar contains experimental ARM ISA
+support.  This short document is intended to get you started on using
+these sources.  Questions, comments, bugfixes, and suggestions should
+be directed to ss-sa@cs.colorado.edu.
+
+
+To build the distribution:
+--------------------------
+
+  make config-arm
+  make
+
+Currently, builds are only tested on Linux/x86, but don't panic if you
+are on another platform.  SimpleScalar codes can be made quite portable,
+see host.h for porting details.
+
+
+A couple of binaries are included to get you started:
+-----------------------------------------------------
+
+The directory "tests-arm" include a number of programs to get
+things rolling.  These binaries were built on a NetWinder Developer
+ARM workstation from Rebel Systems (www.rebel.com) using GNU GCC
+version 2.95.1 with optimization enabled (-O).  The binaries are
+quite large, even for small programs.  This is a known problem
+with ARM ELF linker, I suspect eventually it will be fixed by
+the GNU developers.
+
+Here's how to run the programs in the test directory (omit any
+parenthetical comments):
+
+  ../sim-uop anagram words < input.txt           (anagram)
+  ../sim-uop bresenham.1 100                     (line drawing)
+  ../sim-uop bresenham.2 100                     (another alg)
+  ../sim-uop bzip2 10                            (compressor)
+  ../sim-uop cc1 -O 1stmt.i                      (GNU GCC)
+  ../sim-uop grep.arm dist grep-input.txt        (text search)
+  ../sim-uop gsm.arm -l -f -p clinton.pcm        (GSM encoder)
+  ../sim-uop test-args 1 2 3                     (test arg stack)
+  ../sim-uop test-math                           (test FP)
+  ../sim-uop yacr2 input1                        (VLSI router)
+
+Reference outputs are available for a number of the programs.
+
+There are also some micro-benchmarks that we've used for reference
+H/W validation:
+
+  ../sim-uop ubench/ln                           (all br nottaken)
+  ../sim-uop ubench/ly                           (all br taken)
+  ../sim-uop ubench/smooth.new                   (all loads hit)
+  ../sim-uop ubench/trash.new                    (all loads miss)
+
+
+To build you own binaries:
+--------------------------
+
+SimpleScalar/ARM simulators can only run ELF format ARM binaries
+compiled to use Linux/ARM system calls.  We build our binaries
+using a NetWinder Developer ARM workstation from Rebel Systems
+(rebel.com).  This is a great target for building and testing
+ARM binaries.  SimpleScalar/ARM requires statically linked ARM
+ELF binaries; to build SimpleScalar/ARM binaries on the Netwinder,
+use the following command:
+
+  gcc -static -o <outfile> [flags] <sourcefiles...>
+
+We are currently putting together a cross compilation environment for
+use by users that want to build ARM binaries but lack ARM iron.
+
+
+Abandon all sanity ye who enter HERE:
+-------------------------------------
+
+This is preliminary distribution of the SimpleScalar/ARM code, as such
+there are a few caveats that you should be aware of...
+
+Here's what works:
+
+  - ARM7 integer instruction set emulation
+    - including UOP (micro-op) decomposition for ARM7 CISC
+      instructions (e.g., LDM, STM), simulator sim-uop does
+      functional simulation of Ucode, sim-outorder uses Ucode
+      for performance and power estimation
+  - ARM FPA floating point instruction emulation
+  - ELF Linux/ARM system call emulation
+  - Sim-outorder modeling, including:
+    - tests-arm/sa1core.cfg is an SA-1 core model, this is the pipeline
+      used in Intel's StrongARM SA-11xx processors, we have validated
+      this model against a large collection of workloads, it is within
+      4% of real hardware for performance estimation, here's some of
+      our validation results:
+
+                              Measured CPI
+
+                         SimpleScalar/ARM  Netwinder SA-110  % Diff
+      smooth.new               1.02            1.01           0.9
+      trash.new               33.87           33.70           0.5
+      ln                       1.04            1.02           1.9
+      ly                       1.97            1.91           3.1
+
+      bzip2 10                 3.20            3.10           3.2
+      cc1 -O cc1in.i           2.84            2.90           2.1
+      fft.arm short.pcm        1.45            1.44           0.1
+
+    - tests-arm/xscale.cfg is a model of Intel's proposed XScale
+      microarchitecture, not validated, and probably not very accurate
+      because Intel has released very few details on this processor,
+      but it's something to start with, we'll update this config
+      as we get access to better information and reference hardware
+      for performance validation
+    - the Wattch power model is integrated into sim-outorder, as well
+      as an enhanced power model based on hamming distance measurements,
+      this stuff is all very experimental, stay tuned...
+
+Here's what doesn't work yet (read: our TODO list):
+
+  - ELF symbol table support (the DLite debugger will not recognize
+    program symbols, and sim-profile won't do function profiling)
+  - regression tests are not built yet
+  - DLite debugger has not been ported to ARM yet
+  - EIO trace files are not working yet
+  - cross-endian execution support is not yet tested
+  - documentation (other than this doc) needs to be completed
+  - syscall.c only support MIN_SYSCALL_MODE, that is the minimal system
+    call support mode, not to much of a problem for SPEC and MiBench
+    benchmarks, work on better system call support and IPaq device
+    modeling is underway
+  - sim-outorder could be improved:
+    - the return address predictor does not recognize call/returns
+      for ARM yet (how would this work?!?!?)
+    - PC updates by non-branches are not handled very efficiently
+    - power modeling is a work in progress, we've included the
+      Wattch power model, and an enhanced version we are developing
+      that supports hamming distances, better reconfiguration
+      capability, refined physical power modeling, etc... we will
+      be reporting on this work as it develops
+
+
+SimpleScalar/ARM License:
+-------------------------
+
+This release may be used free of charge by academic institutions for
+academic non-commercial research or instructional purposes only.
+Commercial use of any kind (i.e., any use of SimpleScalar in a
+commercial setting) requires a license from SimpleScalar LLC, you
+can contact them at simplescalar@yahoo.com.

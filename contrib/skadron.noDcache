@@ -1,0 +1,379 @@
+Subject: Accurate mem access with no D-$s
+   Date: Wed, 12 Nov 1997 08:12:15 -0800 (PST)
+   From: Kevin Skadron <skadron@cs.princeton.edu>
+
+
+
+Received: from ormail.intel.com by ichips.intel.com (8.7.4/jIII)
+        id KAA28210; Thu, 6 Mar 1997 10:54:29 -0800 (PST)
+Received: from CS.Princeton.EDU (CS.Princeton.EDU [128.112.136.10])
+          by ormail.intel.com (8.8.4/8.8.4) with ESMTP
+          id LAA23265 for <taustin@ichips.intel.com>; Thu, 6 Mar 1997 11:01:42 -0800 (PST)
+Received: from dynastar.CS.Princeton.EDU (dynastar [128.112.168.3]) by CS.Princeton.EDU (8.7.6/8.7.3) with SMTP id NAA16185; Thu, 6 Mar 1997 13:58:30 -0500 (EST)
+Received: by dynastar.CS.Princeton.EDU (8.6.12/CS-Client)
+        id NAA14178; Thu, 6 Mar 1997 13:58:28 -0500
+From: Kevin Skadron <skadron@CS.Princeton.EDU>
+Message-Id: <199703061858.NAA14178@dynastar.CS.Princeton.EDU>
+Subject: Accurate mem access with no D-$s
+To: taustin@ichips.intel.com (Todd Austin)
+Date: Thu, 6 Mar 1997 13:58:27 -0500 (EST)
+Cc: psa@CS.Princeton.EDU (Pritpal S. Ahuja)
+X-Mailer: ELM [version 2.4 PL24 PGP3 *ALPHA*]
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Length: 6494
+
+For some experiments, I needed to simulate a machine with no D-caches,
+but still model how much time it takes to access memory (now on every
+reference).  The following diff allows the user to specify "mem"
+for -cache:dl1 or -cache:il1 and does the sensible thing.  Don't
+know if it'd be of sufficient interest for you to include, but I thought
+I'd send it your way...
+
+--Kevin
+
+
+
+*** 1.13        1997/03/06 18:43:38
+--- 1.14        1997/03/06 18:52:25
+***************
+*** 47,61 ****
+   * and improve what you give them.
+   *
+   * INTERNET: dburger@cs.wisc.edu
+   * US Mail:  1210 W. Dayton Street, Madison, WI 53706
+   *
+!  * $Id: skadron.noDcache,v 1.1.1.1 2000/11/29 14:53:54 cu-cs Exp $
+   *
+   * $Log: skadron.noDcache,v $
+   * Revision 1.1.1.1  2000/11/29 14:53:54  cu-cs
+   * Grand unification of arm sources.
+   *
+   *
+   * Revision 1.1.1.1  2000/05/26 15:21:54  taustin
+   * SimpleScalar Tool Set
+   *
+   *
+!  * Revision 1.13  1997/03/06  18:43:38  skadron
+!  * Modified LSQ to act as an L0 cache
+   *
+   * Revision 1.12  1997/03/03  20:52:10  skadron
+   * Added dist for LSQ-occupancy.  Also some cosmetic changes.
+   *
+   * Revision 1.11  1997/03/02  19:31:01  skadron
+--- 47,62 ----
+   * and improve what you give them.
+   *
+   * INTERNET: dburger@cs.wisc.edu
+   * US Mail:  1210 W. Dayton Street, Madison, WI 53706
+   *
+!  * $Id: skadron.noDcache,v 1.1.1.1 2000/11/29 14:53:54 cu-cs Exp $
+   *
+   * $Log: skadron.noDcache,v $
+   * Revision 1.1.1.1  2000/11/29 14:53:54  cu-cs
+   * Grand unification of arm sources.
+   *
+   *
+   * Revision 1.1.1.1  2000/05/26 15:21:54  taustin
+   * SimpleScalar Tool Set
+   *
+   *
+!  * Revision 1.14  1997/03/06  18:52:25  skadron
+!  * Modified cache handling so that with no caches, latency is mem latency
+!  *    and not the small fu latency
+   *
+   * Revision 1.12  1997/03/03  20:52:10  skadron
+   * Added dist for LSQ-occupancy.  Also some cosmetic changes.
+   *
+   * Revision 1.11  1997/03/02  19:31:01  skadron
+***************
+*** 200,209 ****
+--- 201,211 ----
+  static int LSQ_size = 4;
+  
+  /* l1 data cache config, i.e., {<config>|none} */
+  static char *cache_dl1_opt;
+  static int cache_dl1_perfect;
++ static int dl1_access_mem = FALSE;
+  
+  /* l1 data cache hit latency (in cycles) */
+  static int cache_dl1_lat;
+  
+  /* l2 data cache config, i.e., {<config>|none} */
+***************
+*** 214,223 ****
+--- 216,226 ----
+  static int cache_dl2_lat;
+  
+  /* l1 instruction cache config, i.e., {<config>|dl1|dl2|none} */
+  static char *cache_il1_opt;
+  static int cache_il1_perfect;
++ static int il1_access_mem = FALSE;
+  
+  /* l1 instruction cache hit latency (in cycles) */
+  static int cache_il1_lat;
+  
+  /* l2 instruction cache config, i.e., {<config>|dl1|dl2|none} */
+***************
+*** 764,774 ****
+    opt_reg_note(odb,
+  "  The cache config parameter <config> has the following format:\n"
+  "\n"
+  "    <name>:<nsets>:<bsize>:<assoc>:<repl>\n"
+  "\n"
+! "    <name>   - name of the cache being defined\n"
+  "    <nsets>  - number of sets in the cache\n"
+  "    <bsize>  - block size of the cache\n"
+  "    <assoc>  - associativity of the cache\n"
+  "    <repl>   - block replacement strategy, 'l'-LRU, 'f'-FIFO, 'r'-random\n"
+  "\n"
+--- 767,777 ----
+    opt_reg_note(odb,
+  "  The cache config parameter <config> has the following format:\n"
+  "\n"
+  "    <name>:<nsets>:<bsize>:<assoc>:<repl>\n"
+  "\n"
+! "    <name>   - name of the cache being defined (can be \"none\" or \"mem\")\n"
+  "    <nsets>  - number of sets in the cache\n"
+  "    <bsize>  - block size of the cache\n"
+  "    <assoc>  - associativity of the cache\n"
+  "    <repl>   - block replacement strategy, 'l'-LRU, 'f'-FIFO, 'r'-random\n"
+  "\n"
+***************
+*** 1013,1026 ****
+  
+    if (ruu_commit_width < 1)
+      fatal("commit width must be positive non-zero");
+  
+    /* use a level 1 D-cache? */
+!   if (!mystricmp(cache_dl1_opt, "none"))
+      {
+        cache_dl1 = NULL;
+  
+        /* the level 2 D-cache cannot be defined */
+        if (strcmp(cache_dl2_opt, "none"))
+        fatal("the l1 data cache must defined if the l2 cache is defined");
+        cache_dl2 = NULL;
+      }
+--- 1016,1034 ----
+  
+    if (ruu_commit_width < 1)
+      fatal("commit width must be positive non-zero");
+  
+    /* use a level 1 D-cache? */
+!   if (!mystricmp(cache_dl1_opt, "none") || !mystricmp(cache_dl1_opt, "mem"))
+      {
+        cache_dl1 = NULL;
+  
++       /* If we have no D-caches, should we still appropriately model
++        * memory access? */
++       if (!mystricmp(cache_dl1_opt, "mem"))
++       dl1_access_mem = TRUE;
++ 
+        /* the level 2 D-cache cannot be defined */
+        if (strcmp(cache_dl2_opt, "none"))
+        fatal("the l1 data cache must defined if the l2 cache is defined");
+        cache_dl2 = NULL;
+      }
+***************
+*** 1051,1064 ****
+            cache_set_perfect(cache_dl2);
+        }
+      }
+  
+    /* use a level 1 I-cache? */
+!   if (!mystricmp(cache_il1_opt, "none"))
+      {
+        cache_il1 = NULL;
+  
+        /* the level 2 I-cache cannot be defined */
+        if (strcmp(cache_il2_opt, "none"))
+        fatal("the l1 inst cache must defined if the l2 cache is defined");
+        cache_il2 = NULL;
+      }
+--- 1059,1077 ----
+            cache_set_perfect(cache_dl2);
+        }
+      }
+  
+    /* use a level 1 I-cache? */
+!   if (!mystricmp(cache_il1_opt, "none") || !mystricmp(cache_il1_opt, "mem"))
+      {
+        cache_il1 = NULL;
+  
++       /* If we have no I-caches, should we still appropriately model
++        * memory access? */
++       if (!mystricmp(cache_il1_opt, "mem"))
++       il1_access_mem = TRUE;
++ 
+        /* the level 2 I-cache cannot be defined */
+        if (strcmp(cache_il2_opt, "none"))
+        fatal("the l1 inst cache must defined if the l2 cache is defined");
+        cache_il2 = NULL;
+      }
+***************
+*** 2712,2721 ****
+--- 2725,2744 ----
+                                    load_lat = cache_dl1_lat;
+  
+                                  if (load_lat > cache_dl1_lat)
+                                    events |= PEV_CACHEMISS;
+                                }
++                             else if (dl1_access_mem 
++                                      && rs->addr >= ld_data_base
++                                      && rs->addr < ld_stack_base)
++                               {
++                                 /* No D-caches, but get accurate mem
++                                  * access behavior */
++                                 load_lat = dl2_access_fn(Read, 
++                                                          (rs->addr * ~3),
++                                                          4, NULL, sim_cycle);
++                               }
+                              else
+                                {
+                                  /* no caches defined, or ref to an invalid
+                                   * address -- just use op latency */
+                                  load_lat = fu->oplat;
+***************
+*** 4015,4024 ****
+--- 4038,4053 ----
+              if (cache_il1_perfect)
+                lat = cache_il1_lat;
+  
+              if (lat > cache_il1_lat)
+                last_inst_missed = TRUE;
++           }
++         else if (il1_access_mem)
++           {
++             /* no I-caches, but get accurate mem access behavior */
++             lat = il2_access_fn(Read, fetch_regs_PC, sizeof(SS_INST_TYPE),
++                                 NULL, sim_cycle);
+            }
+          if (itlb)
+            {
+              /* access the I-TLB, NOTE: this code will initiate
+                 speculative TLB misses */
+
+
+--
+
+From: Kevin Skadron <skadron@CS.Princeton.EDU>
+Message-Id: <199704061941.PAA02700@dynastar.CS.Princeton.EDU>
+Subject: Accurate mem access with no I-$s
+To: taustin@ichips.intel.com (Todd Austin)
+Date: Sun, 6 Apr 1997 15:41:44 -0400 (EDT)
+Cc: psa@CS.Princeton.EDU (Pritpal S. Ahuja)
+X-Mailer: ELM [version 2.4 PL24 PGP3 *ALPHA*]
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Length: 2853
+
+Bug-fix!
+
+> For some experiments, I needed to simulate a machine with no D-caches,
+> but still model how much time it takes to access memory (now on every
+> reference).  The following diff allows the user to specify "mem"
+> for -cache:dl1 or -cache:il1 and does the sensible thing.  Don't
+> know if it'd be of sufficient interest for you to include, but I thought
+> I'd send it your way...
+
+I sent you this about a month ago, but discovered today I only tested
+the case where -cache:dl1 mem was specified, and not -cache:il1 mem.
+The latter case has a bug that causes sim-outorder to hang!  So here's
+the fix, in case you were thinking of implementing the above.
+
+Patch might barf on this diff; there's a 'num_fetched' variable I've
+added in ruu_fetch to facilitate a stat_dist of # insts fetched / cycle.
+
+--Kevin
+
+------------
+*** 1.21	1997/04/06 18:45:57
+--- 1.22	1997/04/06 19:32:26
+***************
+*** 49,57 ****
+   * INTERNET: dburger@cs.wisc.edu
+   * US Mail:  1210 W. Dayton Street, Madison, WI 53706
+   *
+!  * $Id: skadron.noDcache,v 1.1.1.1 2000/11/29 14:53:54 cu-cs Exp $
+   *
+   * $Log: skadron.noDcache,v $
+   * Revision 1.1.1.1  2000/11/29 14:53:54  cu-cs
+   * Grand unification of arm sources.
+   *
+   *
+   * Revision 1.1.1.1  2000/05/26 15:21:54  taustin
+   * SimpleScalar Tool Set
+   *
+   *
+   * Revision 1.21  1997/04/06  18:45:57  skadron
+   * Added stat_dist for #ints fetched/cycle
+   *
+--- 49,61 ----
+   * INTERNET: dburger@cs.wisc.edu
+   * US Mail:  1210 W. Dayton Street, Madison, WI 53706
+   *
+!  * $Id: skadron.noDcache,v 1.1.1.1 2000/11/29 14:53:54 cu-cs Exp $
+   *
+   * $Log: skadron.noDcache,v $
+   * Revision 1.1.1.1  2000/11/29 14:53:54  cu-cs
+   * Grand unification of arm sources.
+   *
+   *
+   * Revision 1.1.1.1  2000/05/26 15:21:54  taustin
+   * SimpleScalar Tool Set
+   *
+   *
++  * Revision 1.22  1997/04/06  19:32:26  skadron
++  * Bug fix: "-cache:il1 mem" caused simulation to hang by preventing any
++  *    actual fetching of instructions
++  *
+   * Revision 1.21  1997/04/06  18:45:57  skadron
+   * Added stat_dist for #ints fetched/cycle
+   *
+***************
+*** 4093,4104 ****
+  	      if (lat > cache_il1_lat)
+  		last_inst_missed = TRUE;
+  	    }
+- 	  else if (il1_access_mem)
+- 	    {
+- 	      /* no I-caches, but get accurate mem access behavior */
+- 	      lat = il2_access_fn(Read, fetch_regs_PC, sizeof(SS_INST_TYPE),
+- 				  NULL, sim_cycle);
+- 	    }
+  	  if (itlb)
+  	    {
+  	      /* access the I-TLB, NOTE: this code will initiate
+--- 4097,4102 ----
+***************
+*** 4182,4188 ****
+        fetch_num++;
+        num_fetched++;
+      }
+!   
+    return num_fetched;
+  }
+  
+--- 4180,4198 ----
+        fetch_num++;
+        num_fetched++;
+      }
+! 
+!   /* If no I-caches, but we're modeling each I-fetch as going to memory
+!    * instead of being ideal, then set the delay til next fetch here. 
+!    * So what we're modeling here is a one-cache-line fetch buffer on-chip. */
+!   if (il1_access_mem)
+!     {
+!       /* no I-caches, but get accurate mem access behavior */
+!       lat = il2_access_fn(Read, fetch_regs_PC, sizeof(SS_INST_TYPE),
+! 			  NULL, sim_cycle);
+!       if (ruu_fetch_issue_delay == 0)
+! 	ruu_fetch_issue_delay += lat - 1;
+!     }
+! 
+    return num_fetched;
+  }
+  

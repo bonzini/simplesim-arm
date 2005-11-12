@@ -1,0 +1,131 @@
+Subject: Accurate mem access with no I-$s
+   Date: Wed, 12 Nov 1997 08:12:06 -0800 (PST)
+   From: Kevin Skadron <skadron@cs.princeton.edu>
+
+Received: from ormail.intel.com by ichips.intel.com (8.7.4/jIII)
+        id MAA00291; Sun, 6 Apr 1997 12:33:13 -0700 (PDT)
+Received: from CS.Princeton.EDU (CS.Princeton.EDU [128.112.136.10])
+          by ormail.intel.com (8.8.4/8.8.4) with ESMTP
+          id MAA27268 for <taustin@ichips.intel.com>; Sun, 6 Apr 1997 12:44:56 -0700 (PDT)
+Received: from dynastar.CS.Princeton.EDU (dynastar [128.112.168.3]) by CS.Princeton.EDU (8.7.6/8.7.3) with SMTP id PAA07971; Sun, 6 Apr 1997 15:41:46 -0400 (EDT)
+Received: by dynastar.CS.Princeton.EDU (8.6.12/CS-Client)
+        id PAA02700; Sun, 6 Apr 1997 15:41:45 -0400
+From: Kevin Skadron <skadron@CS.Princeton.EDU>
+Message-Id: <199704061941.PAA02700@dynastar.CS.Princeton.EDU>
+Subject: Accurate mem access with no I-$s
+To: taustin@ichips.intel.com (Todd Austin)
+Date: Sun, 6 Apr 1997 15:41:44 -0400 (EDT)
+Cc: psa@CS.Princeton.EDU (Pritpal S. Ahuja)
+X-Mailer: ELM [version 2.4 PL24 PGP3 *ALPHA*]
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Length: 2853
+
+Bug-fix!
+
+> For some experiments, I needed to simulate a machine with no D-caches,
+> but still model how much time it takes to access memory (now on every
+> reference).  The following diff allows the user to specify "mem"
+> for -cache:dl1 or -cache:il1 and does the sensible thing.  Don't
+> know if it'd be of sufficient interest for you to include, but I thought
+> I'd send it your way...
+
+I sent you this about a month ago, but discovered today I only tested
+the case where -cache:dl1 mem was specified, and not -cache:il1 mem.
+The latter case has a bug that causes sim-outorder to hang!  So here's
+the fix, in case you were thinking of implementing the above.
+
+Patch might barf on this diff; there's a 'num_fetched' variable I've
+added in ruu_fetch to facilitate a stat_dist of # insts fetched / cycle.
+
+--Kevin
+
+------------
+*** 1.21        1997/04/06 18:45:57
+--- 1.22        1997/04/06 19:32:26
+***************
+*** 49,57 ****
+   * INTERNET: dburger@cs.wisc.edu
+   * US Mail:  1210 W. Dayton Street, Madison, WI 53706
+   *
+!  * $Id: skadron.noI-cache,v 1.1.1.1 2000/11/29 14:53:54 cu-cs Exp $
+   *
+   * $Log: skadron.noI-cache,v $
+   * Revision 1.1.1.1  2000/11/29 14:53:54  cu-cs
+   * Grand unification of arm sources.
+   *
+   *
+   * Revision 1.1.1.1  2000/05/26 15:21:54  taustin
+   * SimpleScalar Tool Set
+   *
+   *
+   * Revision 1.21  1997/04/06  18:45:57  skadron
+   * Added stat_dist for #ints fetched/cycle
+   *
+--- 49,61 ----
+   * INTERNET: dburger@cs.wisc.edu
+   * US Mail:  1210 W. Dayton Street, Madison, WI 53706
+   *
+!  * $Id: skadron.noI-cache,v 1.1.1.1 2000/11/29 14:53:54 cu-cs Exp $
+   *
+   * $Log: skadron.noI-cache,v $
+   * Revision 1.1.1.1  2000/11/29 14:53:54  cu-cs
+   * Grand unification of arm sources.
+   *
+   *
+   * Revision 1.1.1.1  2000/05/26 15:21:54  taustin
+   * SimpleScalar Tool Set
+   *
+   *
++  * Revision 1.22  1997/04/06  19:32:26  skadron
++  * Bug fix: "-cache:il1 mem" caused simulation to hang by preventing any
++  *    actual fetching of instructions
++  *
+   * Revision 1.21  1997/04/06  18:45:57  skadron
+   * Added stat_dist for #ints fetched/cycle
+   *
+***************
+*** 4093,4104 ****
+              if (lat > cache_il1_lat)
+                last_inst_missed = TRUE;
+            }
+-         else if (il1_access_mem)
+-           {
+-             /* no I-caches, but get accurate mem access behavior */
+-             lat = il2_access_fn(Read, fetch_regs_PC, sizeof(SS_INST_TYPE),
+-                                 NULL, sim_cycle);
+-           }
+          if (itlb)
+            {
+              /* access the I-TLB, NOTE: this code will initiate
+--- 4097,4102 ----
+***************
+*** 4182,4188 ****
+        fetch_num++;
+        num_fetched++;
+      }
+!   
+    return num_fetched;
+  }
+  
+--- 4180,4198 ----
+        fetch_num++;
+        num_fetched++;
+      }
+! 
+!   /* If no I-caches, but we're modeling each I-fetch as going to memory
+!    * instead of being ideal, then set the delay til next fetch here. 
+!    * So what we're modeling here is a one-cache-line fetch buffer on-chip. */
+!   if (il1_access_mem)
+!     {
+!       /* no I-caches, but get accurate mem access behavior */
+!       lat = il2_access_fn(Read, fetch_regs_PC, sizeof(SS_INST_TYPE),
+!                         NULL, sim_cycle);
+!       if (ruu_fetch_issue_delay == 0)
+!       ruu_fetch_issue_delay += lat - 1;
+!     }
+! 
+    return num_fetched;
+  }
+  
