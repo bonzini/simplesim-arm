@@ -154,7 +154,7 @@ fatal_hook(void (*hook_fn)(FILE *stream));	/* fatal hook function */
   _fatal(__FILE__, __FUNCTION__, __LINE__, fmt, ## args)
 
 void
-_fatal(char *file, char *func, int line, char *fmt, ...)
+_fatal(const char *file, const char *func, int line, char *fmt, ...)
 __attribute__ ((noreturn));
 #else /* !__GNUC__ */
 void
@@ -167,7 +167,7 @@ fatal(char *fmt, ...);
   _panic(__FILE__, __FUNCTION__, __LINE__, fmt, ## args)
 
 void
-_panic(char *file, char *func, int line, char *fmt, ...)
+_panic(const char *file, const char *func, int line, char *fmt, ...)
 __attribute__ ((noreturn));
 #else /* !__GNUC__ */
 void
@@ -180,7 +180,7 @@ panic(char *fmt, ...);
   _warn(__FILE__, __FUNCTION__, __LINE__, fmt, ## args)
 
 void
-_warn(char *file, char *func, int line, char *fmt, ...);
+_warn(const char *file, const char *func, int line, char *fmt, ...);
 #else /* !__GNUC__ */
 void
 warn(char *fmt, ...);
@@ -195,7 +195,7 @@ warn(char *fmt, ...);
     __first = FALSE;							\
   } while (0)
 void
-_warn(char *file, char *func, int line, char *fmt, ...);
+_warn(const char *file, const char *func, int line, char *fmt, ...);
 #else /* !__GNUC__ */
 void
 warn(+char *fmt, ...);
@@ -207,7 +207,7 @@ warn(+char *fmt, ...);
   _info(__FILE__, __FUNCTION__, __LINE__, fmt, ## args)
 
 void
-_info(char *file, char *func, int line, char *fmt, ...);
+_info(const char *file, const char *func, int line, char *fmt, ...);
 #else /* !__GNUC__ */
 void
 info(char *fmt, ...);
@@ -224,7 +224,7 @@ info(char *fmt, ...);
     } while(0)
 
 void
-_debug(char *file, char *func, int line, char *fmt, ...);
+_debug(const char *file, const char *func, int line, char *fmt, ...);
 #else /* !__GNUC__ */
 void
 debug(char *fmt, ...);

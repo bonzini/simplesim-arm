@@ -192,11 +192,42 @@ typedef enum md_fault_type
  * memory accessors macros, fast but difficult to debug...
  */
 
+#ifdef __GNUC__
 /* safe version, works only with scalar types */
-/* FIXME: write a more efficient GNU C expression for this... */
 #define MEM_READ(MEM, ADDR, TYPE)					\
-  (MEM_PAGE(MEM, (md_addr_t)(ADDR))					\
-   ? *((TYPE *)(MEM_PAGE(MEM, (md_addr_t)(ADDR)) + MEM_OFFSET(ADDR)))	\
+  ({									\
+    md_addr_t _mem_addr = (ADDR);					\
+    const byte_t *_mem_base = MEM_PAGE(MEM, _mem_addr);			\
+    _mem_base								\
+     ? *((TYPE *)(_mem_base + MEM_OFFSET(_mem_addr)))			\
+     : /* page not yet allocated, return zero value */ 0; })
+
+/* unsafe version, works with any type */
+#define __UNCHK_MEM_READ(MEM, ADDR, TYPE)				\
+  ({									\
+    md_addr_t _mem_addr = (ADDR);					\
+    const byte_t *_mem_base = MEM_PAGE(MEM, _mem_addr);			\
+    *((TYPE *)(_mem_base + MEM_OFFSET(_mem_addr))); })
+
+/* safe version, works only with scalar types */
+#define MEM_WRITE(MEM, ADDR, TYPE, VAL)					\
+  ({									\
+    md_addr_t _mem_addr = (ADDR);					\
+    MEM_TICKLE(MEM, _mem_addr);						\
+    *((TYPE *)(MEM_PAGE(MEM, _mem_addr) + MEM_OFFSET(_mem_addr))) = (VAL); })
+
+/* unsafe version, works with any type */
+#define __UNCHK_MEM_WRITE(MEM, ADDR, TYPE, VAL)				\
+  ({									\
+    md_addr_t _mem_addr = (ADDR);					\
+    *((TYPE *)(MEM_PAGE(MEM, _mem_addr) + MEM_OFFSET(_mem_addr))) = (VAL); })
+
+#else
+
+/* safe version, works only with scalar types */
+#define MEM_READ(MEM, ADDR, TYPE)                                       \
+  (MEM_PAGE(MEM, (md_addr_t)(ADDR))                                     \
+   ? *((TYPE *)(MEM_PAGE(MEM, (md_addr_t)(ADDR)) + MEM_OFFSET(ADDR)))   \
    : /* page not yet allocated, return zero value */ 0)
 
 /* unsafe version, works with any type */
@@ -212,6 +243,7 @@ typedef enum md_fault_type
 /* unsafe version, works with any type */
 #define __UNCHK_MEM_WRITE(MEM, ADDR, TYPE, VAL)				\
   (*((TYPE *)(MEM_PAGE(MEM, (md_addr_t)(ADDR)) + MEM_OFFSET(ADDR))) = (VAL))
+#endif
 
 
 /* fast memory accessor macros, typed versions */

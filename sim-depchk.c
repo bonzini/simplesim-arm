@@ -309,13 +309,20 @@ sim_uninit(void)
    25		- fpsr
    26		- pc
 */
-#define DEP(MSK,IDX)		((MSK) |= (IDX))
+
+/* Using a function, we work around the sequence point warnings.  */
+#define DEP(MSK,IDX)		(update_dep (&(MSK), (IDX)))
 #define DEP_GPR(N)		(assert((N) < 18), (1 << (N)))
 #define DEP_FPR(N)		(assert((N) < 8), (1 << ((N)+18)))
 #define DEP_ADDR		(1 << 26)
 #define DEP_PSR			(1 << 27)
 #define DEP_FPSR		(1 << 28)
 typedef word_t depmask_t;
+
+static inline void update_dep (depmask_t *pmask, int idx)
+{
+  *pmask |= idx; 
+}
 
 void
 dep_print(FILE *stream, depmask_t dep)

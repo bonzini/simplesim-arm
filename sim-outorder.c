@@ -262,32 +262,32 @@ static char *pred_type;
 
 /* bimodal predictor config (<table_size>) */
 static int bimod_nelt = 1;
-static int bimod_config[1] =
+int bimod_config[1] =
   { /* bimod tbl size */2048 };
 
 /* 2-level predictor config (<l1size> <l2size> <hist_size> <xor>) */
 static int twolev_nelt = 4;
-static int twolev_config[4] =
+int twolev_config[4] =
   { /* l1size */1, /* l2size */1024, /* hist */8, /* xor */FALSE};
 
 /* combining predictor config (<meta_table_size> */
 static int comb_nelt = 1;
-static int comb_config[1] =
+int comb_config[1] =
   { /* meta_table_size */1024 };
 
 /* return address stack (RAS) size */
-static int ras_size = 8;
+int ras_size = 8;
 
 /* BTB predictor config (<num_sets> <associativity>) */
 static int btb_nelt = 2;
-static int btb_config[2] =
+int btb_config[2] =
   { /* nsets */512, /* assoc */4 };
 
 /* instruction decode B/W (insts/cycle) */
-static int ruu_decode_width;
+int ruu_decode_width;
 
 /* instruction issue B/W (insts/cycle) */
-static int ruu_issue_width;
+int ruu_issue_width;
 
 /* run pipeline with in-order issue */
 static int ruu_inorder_issue;
@@ -296,34 +296,34 @@ static int ruu_inorder_issue;
 static int ruu_include_spec = TRUE;
 
 /* instruction commit B/W (insts/cycle) */
-static int ruu_commit_width;
+int ruu_commit_width;
 
 /* register update unit (RUU) size */
-static int RUU_size = 8;
+int RUU_size = 8;
 
 /* load/store queue (LSQ) size */
-static int LSQ_size = 4;
+int LSQ_size = 4;
 
 /* l1 data cache config, i.e., {<config>|none} */
-static char *cache_dl1_opt;
+char *cache_dl1_opt;
 
 /* l1 data cache hit latency (in cycles) */
 static int cache_dl1_lat;
 
 /* l2 data cache config, i.e., {<config>|none} */
-static char *cache_dl2_opt;
+char *cache_dl2_opt;
 
 /* l2 data cache hit latency (in cycles) */
 static int cache_dl2_lat;
 
 /* l1 instruction cache config, i.e., {<config>|dl1|dl2|none} */
-static char *cache_il1_opt;
+char *cache_il1_opt;
 
 /* l1 instruction cache hit latency (in cycles) */
 static int cache_il1_lat;
 
 /* l2 instruction cache config, i.e., {<config>|dl1|dl2|none} */
-static char *cache_il2_opt;
+char *cache_il2_opt;
 
 /* l2 instruction cache hit latency (in cycles) */
 static int cache_il2_lat;
@@ -346,25 +346,25 @@ static int mem_bus_width;
 static int mem_pipelined;
 
 /* instruction TLB config, i.e., {<config>|none} */
-static char *itlb_opt;
+char *itlb_opt;
 
 /* data TLB config, i.e., {<config>|none} */
-static char *dtlb_opt;
+char *dtlb_opt;
 
 /* inst/data TLB miss latency (in cycles) */
 static int tlb_miss_lat;
 
 /* total number of integer ALU's available */
-static int res_ialu;
+int res_ialu;
 
 /* total number of integer multiplier/dividers available */
 static int res_imult;
 
 /* total number of memory system ports available (to CPU) */
-static int res_memport;
+int res_memport;
 
 /* total number of floating point ALU's available */
-static int res_fpalu;
+int res_fpalu;
 
 /* total number of floating point multiplier/dividers available */
 static int res_fpmult;

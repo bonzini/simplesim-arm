@@ -129,7 +129,7 @@ fatal_hook(void (*fn)(FILE *stream))	/* fatal hook function */
 /* declare a fatal run-time error, calls fatal hook function */
 #ifdef __GNUC__
 void
-_fatal(char *file, char *func, int line, char *fmt, ...)
+_fatal(const char *file, const char *func, int line, char *fmt, ...)
 #else /* !__GNUC__ */
 void
 fatal(char *fmt, ...)
@@ -153,7 +153,7 @@ fatal(char *fmt, ...)
 /* declare a panic situation, dumps core */
 #ifdef __GNUC__
 void
-_panic(char *file, char *func, int line, char *fmt, ...)
+_panic(const char *file, const char *func, int line, char *fmt, ...)
 #else /* !__GNUC__ */
 void
 panic(char *fmt, ...)
@@ -176,7 +176,7 @@ panic(char *fmt, ...)
 /* declare a warning */
 #ifdef __GNUC__
 void
-_warn(char *file, char *func, int line, char *fmt, ...)
+_warn(const char *file, const char *func, int line, char *fmt, ...)
 #else /* !__GNUC__ */
 void
 warn(char *fmt, ...)
@@ -197,7 +197,7 @@ warn(char *fmt, ...)
 /* print general information */
 #ifdef __GNUC__
 void
-_info(char *file, char *func, int line, char *fmt, ...)
+_info(const char *file, const char *func, int line, char *fmt, ...)
 #else /* !__GNUC__ */
 void
 info(char *fmt, ...)
@@ -218,7 +218,7 @@ info(char *fmt, ...)
 /* print a debugging message */
 #ifdef __GNUC__
 void
-_debug(char *file, char *func, int line, char *fmt, ...)
+_debug(const char *file, const char *func, int line, char *fmt, ...)
 #else /* !__GNUC__ */
 void
 debug(char *fmt, ...)

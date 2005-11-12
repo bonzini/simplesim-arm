@@ -345,12 +345,6 @@ extern md_inst_t MD_NOP_INST;
     incr/decr operation specifiers */
 #define MD_MAX_MASK		2048
 
-/* internal decoder state */
-extern enum md_opcode md_mask2op[];
-extern unsigned int md_opoffset[];
-extern unsigned int md_opmask[];
-extern unsigned int md_opshift[];
-
 /* global opcode names, these are returned by the decoder (MD_OP_ENUM()) */
 enum md_opcode {
   OP_NA = 0,	/* NA */
@@ -361,6 +355,12 @@ enum md_opcode {
 #include "machine.def"
   OP_MAX	/* number of opcodes + NA */
 };
+
+/* internal decoder state */
+extern enum md_opcode md_mask2op[];
+extern unsigned int md_opoffset[];
+extern unsigned int md_opmask[];
+extern unsigned int md_opshift[];
 
 /* enum md_opcode -> description string */
 #define MD_OP_NAME(OP)		(md_op2name[OP])
