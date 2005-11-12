@@ -4300,12 +4300,15 @@ sys_syscall_1(struct regs_t *regs,	/* registers to access */
 	        if (angel[1] & 1)
 	          local_flags |= O_BINARY;
 #endif
-	        if (angel[1] & 2)
-	          local_flags |= O_RDWR;
 	        if (angel[1] & 4)
 	          local_flags |= O_CREAT | O_TRUNC;
 	        if (angel[1] & 8)
-	          local_flags |= O_APPEND;
+	          local_flags |= O_APPEND | O_TRUNC;
+
+	        if (angel[1] & 2)
+	          local_flags |= O_RDWR;
+	        else if (angel[1] & 12)
+	          local_flags |= O_WRONLY;
 
 	        /* open the file */
 	        fd = open(buf, local_flags, 0666);
