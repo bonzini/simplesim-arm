@@ -3,5 +3,6 @@ precious ^loader\.c$
 precious ^machine\.(c|h|def)$
 precious ^symbol\.c$
 precious ^syscall\.c$
+precious ^sysprobe$
 precious ^sim-[a-z]*$
 precious ^tests$
