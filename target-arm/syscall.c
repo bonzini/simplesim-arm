@@ -1214,7 +1214,6 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	else {
 	  	regs->regs_R[MD_REG_R0] = -(errno); /* negative of the error number is returned in r0 */
 	}
-	}
       break;
 #endif
 
@@ -1256,7 +1255,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	     &a_sock,(int) regs->regs_R[MD_REG_A2]);
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_V0] != (qword_t)-1)
+      if (regs->regs_R[MD_REG_V0] != (word_t)-1)
 	regs->regs_R[MD_REG_A3] = 0;
       else /* got an error, return details */
 	{
@@ -1304,7 +1303,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		    &d_sock, (int)regs->regs_R[MD_REG_A5]);
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_V0] != (qword_t)-1)
+	if (regs->regs_R[MD_REG_V0] != (word_t)-1)
 	  regs->regs_R[MD_REG_A3] = 0;
 	else /* got an error, return details */
 	  {
@@ -1357,7 +1356,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		  a_sock, addr_len);
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_V0] != (qword_t)-1)
+	if (regs->regs_R[MD_REG_V0] != (word_t)-1)
 	  regs->regs_R[MD_REG_A3] = 0;
 	else /* got an error, return details */
 	  {
@@ -1531,7 +1530,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	  chmod(buf, /*mode*/regs->regs_R[MD_REG_A1]);
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+	if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 	  
@@ -1556,7 +1555,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		/*group*/regs->regs_R[MD_REG_R2]);
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+	if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
       }
@@ -1624,7 +1623,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	      /*off*/regs->regs_R[MD_REG_R1], /*dir*/regs->regs_R[MD_REG_R2]);
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+      if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 
@@ -1635,7 +1634,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
       /*result*/regs->regs_R[MD_REG_R0] = debugging ? 2500 : getpid();
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+      if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 
@@ -1650,7 +1649,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
       /*first result*/regs->regs_R[MD_REG_R0] = getuid();
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+      if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 #endif /* _MSC_VER */
@@ -1666,7 +1665,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
       /*first result*/regs->regs_R[MD_REG_R0] = geteuid();
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+      if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 #endif /* _MSC_VER */
@@ -1685,7 +1684,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	  access(buf, /*mode*/regs->regs_R[MD_REG_R1]);
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+	if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
       }
@@ -1708,7 +1707,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	  /*result*/regs->regs_R[MD_REG_R0] = lstat(buf, &sbuf);
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+	if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 
@@ -1739,7 +1738,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
       /*fd*/regs->regs_R[MD_REG_R0] = dup(/*fd*/regs->regs_R[MD_REG_R0]);
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+      if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 
@@ -1763,10 +1762,9 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	/*pipe 2*/regs->regs_R[MD_REG_R1] = fd[1];
 
 	/* check for an error condition */
-	 if (regs->regs_R[MD_REG_R7] == (qword_t)-1)
+	 if (regs->regs_R[MD_REG_R7] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
-	  }
       }
       break;
 #endif
@@ -1787,7 +1785,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		  /* buf */regs->regs_R[MD_REG_R0],
 		  &tms, sizeof(struct linux_tms));
 
-	if (result != (qword_t)-1)
+	if (result != (word_t)-1)
 	  regs->regs_R[MD_REG_R0] = result;
 	else
 	  regs->regs_R[MD_REG_R0] = -errno; /* got an error, return details */
@@ -1803,7 +1801,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
       /*first result*/regs->regs_R[MD_REG_R0] = getgid();
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+      if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 #endif /* _MSC_VER */
@@ -1818,7 +1816,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
       /*first result*/regs->regs_R[MD_REG_R0] = getegid();
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+      if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 #endif /* _MSC_VER */
@@ -1848,7 +1846,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		      /* buf */regs->regs_R[MD_REG_R2], &buf,
 		      sizeof(struct osf_sgttyb));
 
-	    if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+	    if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 		    regs->regs_R[MD_REG_R0] = -errno;
 
@@ -1876,7 +1874,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		      /* buf */regs->regs_R[MD_REG_R2], &buf,
 		      sizeof(struct osf_sgttyb));
 
-	    if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+	    if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 	  }
@@ -1896,7 +1894,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		      /* arg */regs->regs_R[MD_REG_R2],
 		      &nread, sizeof(nread));
 
-	    if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+	    if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 	  }
@@ -1927,7 +1925,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		      /* arg */regs->regs_R[MD_REG_R2],
 		      &arg, sizeof(arg));
 
-	    if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+	    if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 
@@ -2043,7 +2041,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 			buf, NUM_IOCTL_BYTES);
 
 	    /* check for an error condition */
-	    if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+	    if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 	  }
@@ -2061,7 +2059,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	  fstat(/*fd*/regs->regs_R[MD_REG_R0], &sbuf);
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+	if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 
@@ -2093,7 +2091,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
       regs->regs_R[MD_REG_V0] = /* was: getpagesize() */MD_PAGE_SIZE;
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_V0] != (qword_t)-1)
+      if (regs->regs_R[MD_REG_V0] != (word_t)-1)
 	regs->regs_R[MD_REG_A3] = 0;
       else /* got an error, return details */
 	{
@@ -2195,7 +2193,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
       regs->regs_R[MD_REG_V0] = getdtablesize();
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_V0] != (qword_t)-1)
+      if (regs->regs_R[MD_REG_V0] != (word_t)-1)
 	regs->regs_R[MD_REG_A3] = 0;
       else /* got an error, return details */
 	{
@@ -2221,7 +2219,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	struct rlimit rl;
 
 	/* get descriptor table size in rlimit structure */
-	if (getrlimit(RLIMIT_NOFILE, &rl) != (qword_t)-1)
+	if (getrlimit(RLIMIT_NOFILE, &rl) != (word_t)-1)
 	  {
 	    regs->regs_R[MD_REG_V0] = rl.rlim_cur;
 	    regs->regs_R[MD_REG_A3] = 0;
@@ -2243,7 +2241,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	dup2(/*fd1*/regs->regs_R[MD_REG_R0], /*fd2*/regs->regs_R[MD_REG_R1]);
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+      if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
       break;
@@ -2259,7 +2257,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	      /*cmd*/regs->regs_R[MD_REG_R1], /*arg*/regs->regs_R[MD_REG_R2]);
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+      if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 #endif /* _MSC_VER */
@@ -2335,7 +2333,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	/*result*/regs->regs_R[MD_REG_R0] = gettimeofday(tvp, tzp);
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+	if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 
@@ -2372,7 +2370,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	struct osf_rusage rusage;
 
 	/* get user and system times */
-	if (times(&tms_buf) != (qword_t)-1)
+	if (times(&tms_buf) != (word_t)-1)
 	  {
 	    /* no error */
 	    regs->regs_R[MD_REG_R0] = 0;
@@ -2413,7 +2411,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	  getrusage(/*who*/regs->regs_R[MD_REG_R0], &local_rusage);
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+	if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 
@@ -2535,7 +2533,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	  }
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_V0] != (qword_t)-1)
+	if (regs->regs_R[MD_REG_V0] != (word_t)-1)
 	  regs->regs_R[MD_REG_A3] = 0;
 	else /* got an error, return details */
 	  {
@@ -2580,7 +2578,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	    setrlimit(regs->regs_R[MD_REG_R0], &rl);
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+	if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 
@@ -2778,7 +2776,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 #endif
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_V0] != (qword_t)-1)
+	if (regs->regs_R[MD_REG_V0] != (word_t)-1)
 	  {
 	    regs->regs_R[MD_REG_A3] = 0;
 
@@ -2840,7 +2838,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	  truncate(buf, /* length */(size_t)regs->regs_R[MD_REG_R1]);
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+	if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
       }
@@ -2855,7 +2853,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		 /* length */(size_t)regs->regs_R[MD_REG_R1]);
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+      if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
       break;
@@ -2875,7 +2873,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	/*result*/regs->regs_R[MD_REG_R0] = statfs(buf, &sbuf);
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+	if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 
@@ -2916,7 +2914,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 
       fprintf(stderr,"Why??");
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+      if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
       break;
@@ -2932,7 +2930,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		 /* euid */(uid_t)regs->regs_R[MD_REG_R1]);
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+      if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
       break;
@@ -2965,7 +2963,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 				       "socket(proto)"));
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+      if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
       break;
@@ -2998,7 +2996,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		  (void *)&osf_sa, /* addrlen */(int)regs->regs_R[MD_REG_R2]);
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+	if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
       }
@@ -3228,7 +3226,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		     /* optlen */regs->regs_R[MD_REG_A4]);
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_V0] != (qword_t)-1)
+	if (regs->regs_R[MD_REG_V0] != (word_t)-1)
 	  regs->regs_R[MD_REG_A3] = 0;
 	else /* got an error, return details */
 	  {
@@ -3271,7 +3269,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		      /* namelen */&addrlen);
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_V0] != (qword_t)-1)
+	if (regs->regs_R[MD_REG_V0] != (word_t)-1)
 	  regs->regs_R[MD_REG_A3] = 0;
 	else /* got an error, return details */
 	  {
@@ -3324,7 +3322,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		      /* namelen */&addrlen);
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_V0] != (qword_t)-1)
+	if (regs->regs_R[MD_REG_V0] != (word_t)-1)
 	  regs->regs_R[MD_REG_A3] = 0;
 	else /* got an error, return details */
 	  {
@@ -3357,7 +3355,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	setgid(/* gid */(gid_t)regs->regs_R[MD_REG_R0]);
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+      if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
       break;
@@ -3371,7 +3369,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	setuid(/* uid */(uid_t)regs->regs_R[MD_REG_R0]);
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+      if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
       break;
@@ -3386,7 +3384,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		    /* who */(int)regs->regs_R[MD_REG_R1]);
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+      if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
       break;
@@ -3402,7 +3400,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		    /* prio */(int)regs->regs_R[MD_REG_R2]);
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+      if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
       break;
@@ -3472,7 +3470,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 #endif
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+	if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
 
@@ -3513,7 +3511,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		 /* how */(int)regs->regs_R[MD_REG_R1]);
 
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+      if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	    regs->regs_R[MD_REG_R0] = -errno;
       break;
@@ -3585,7 +3583,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
       regs->regs_R[MD_REG_V0] = 0;
 #endif
       /* check for an error condition */
-      if (regs->regs_R[MD_REG_V0] != (qword_t)-1)
+      if (regs->regs_R[MD_REG_V0] != (word_t)-1)
         regs->regs_R[MD_REG_A3] = 0;
       else /* got an error, return details */
         {
@@ -3615,7 +3613,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		      /* len */(size_t)regs->regs_R[MD_REG_A1]);
 
 	/* check for an error condition */
-	if (regs->regs_R[MD_REG_V0] != (qword_t)-1)
+	if (regs->regs_R[MD_REG_V0] != (word_t)-1)
 	  regs->regs_R[MD_REG_A3] = 0;
 	else /* got an error, return details */
 	  {
@@ -3668,7 +3666,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 
 
           /* check for an error condition */
-              if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+              if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	  /* got an error, return details */
 	         regs->regs_R[MD_REG_R0] = -errno;
           }
@@ -3698,7 +3696,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
              /* check for an error condition */
              
              /*NOT sure if the commented code is done since it is a subcall?*/
-             //if (regs->regs_R[MD_REG_R0] != (qword_t)-1)
+             //if (regs->regs_R[MD_REG_R0] != (word_t)-1)
 	     //regs->regs_R[MD_REG_R3] = 0;
              //else /* got an error, return details */
 	     //{
@@ -3738,7 +3736,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		  (void *)&osf_sa, __addrlen);
 
 	  /* check for an error condition */
-	  if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+	  if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	     /* got an error, return details */
 	       regs->regs_R[MD_REG_R0] = -errno;
           }
@@ -3795,7 +3793,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		      /* namelen */&addrlen);
 
 	    /* check for an error condition */
-	    if (regs->regs_R[MD_REG_R0] != (qword_t)-1)
+	    if (regs->regs_R[MD_REG_R0] != (word_t)-1)
               ;
 	      //	      regs->regs_R[MD_REG_A3] = 0;
 	    else /* got an error, return details */
@@ -3865,7 +3863,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	  /* check for an error condition */
 	    /* NOT sure how to handle this yet ??
                do we set memory?? in arm*/
-	    if (regs->regs_R[MD_REG_R0] != (qword_t)-1);
+	    if (regs->regs_R[MD_REG_R0] != (word_t)-1);
 	    //regs->regs_R[MD_REG_A3] = 0;
 	    else /* got an error, return details */
 	    //  {
@@ -3973,7 +3971,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 
 	   /* Not sure what to do with the error conditions yet */
 	    /* check for an error condition */
-	    if (regs->regs_R[MD_REG_R0] != (qword_t)-1)
+	    if (regs->regs_R[MD_REG_R0] != (word_t)-1)
               ;
              
 	      //  regs->regs_R[MD_REG_A3] = 0;
@@ -4047,7 +4045,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		  a_sock, addr_len);
 
 	    /* check for an error condition */
-	    if (regs->regs_R[MD_REG_R0] != (qword_t)-1)
+	    if (regs->regs_R[MD_REG_R0] != (word_t)-1)
                ;
 	    //regs->regs_R[MD_REG_A3] = 0;
 	    else /* got an error, return details */
@@ -4078,7 +4076,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 		   /* how */__arg2);
 
             /* check for an error condition */
-            if (regs->regs_R[MD_REG_R0] == (qword_t)-1)
+            if (regs->regs_R[MD_REG_R0] == (word_t)-1)
 	    /* got an error, return details */
 	       regs->regs_R[MD_REG_R0] = -errno;
           }
@@ -4161,7 +4159,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 
             /*not sure how to handle errors yet */        
 	    /* check for an error condition */
-	    if (regs->regs_R[MD_REG_R0] != (qword_t)-1)
+	    if (regs->regs_R[MD_REG_R0] != (word_t)-1)
               ;
 	      //  regs->regs_R[MD_REG_A3] = 0;
 	    else /* got an error, return details */
