@@ -605,6 +605,36 @@ int getdirentries(int fd, char *buf, int nbytes, long *basep);
 #define ARM_SYS_SENDMSG     16
 #define ARM_SYS_RECVMSG     17
 
+/* Now the SWI numbers and reason codes for RDI (Angel) monitors.  */
+#define ARM_SYS_AngelSWI_ARM            0x123456
+#define ARM_SYS_AngelSWI_Thumb          0xAB
+
+/* The reason codes:  */
+#define AngelSWI_Reason_Open            0x01
+#define AngelSWI_Reason_Close           0x02
+#define AngelSWI_Reason_WriteC          0x03
+#define AngelSWI_Reason_Write0          0x04
+#define AngelSWI_Reason_Write           0x05
+#define AngelSWI_Reason_Read            0x06
+#define AngelSWI_Reason_ReadC           0x07
+#define AngelSWI_Reason_IsTTY           0x09
+#define AngelSWI_Reason_Seek            0x0A
+#define AngelSWI_Reason_FLen            0x0C
+#define AngelSWI_Reason_TmpNam          0x0D
+#define AngelSWI_Reason_Remove          0x0E
+#define AngelSWI_Reason_Rename          0x0F
+#define AngelSWI_Reason_Clock           0x10
+#define AngelSWI_Reason_Time            0x11
+#define AngelSWI_Reason_System          0x12
+#define AngelSWI_Reason_Errno           0x13
+#define AngelSWI_Reason_GetCmdLine      0x15
+#define AngelSWI_Reason_HeapInfo        0x16
+#define AngelSWI_Reason_EnterSVC        0x17
+#define AngelSWI_Reason_ReportException 0x18
+#define ADP_Stopped_ApplicationExit     ((2 << 16) + 38)
+#define ADP_Stopped_RunTimeError        ((2 << 16) + 35)
+
+
 /* translate system call arguments */
 struct xlate_table_t
 {
@@ -1006,6 +1036,11 @@ struct linux_tms
 
 };
 
+void
+sys_syscall_1(struct regs_t *regs,	/* registers to access */
+	      mem_access_fn mem_fn,	/* generic memory accessor */
+	      struct mem_t *mem,	/* memory space to access */
+	      qword_t syscode);		/* swi code */
 
 /* ARM SYSTEM CALL CONVENTIONS
 
@@ -1035,8 +1070,7 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
   /* Figure out the system call number from the swi instruction
 	  Last 24 bits gives us this number */
 
-  qword_t syscode = inst & 0x000fffff;
-
+  qword_t syscode = inst & 0x00ffffff;
 
   /* first, check if an EIO trace is being consumed... */
   /* Left from Alpha code should be the same in ARM though */
@@ -1063,13 +1097,23 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	  regs->regs_C.fpcr = sc.sc_fpcr;
 	}
 #endif
-
-      /* fini... */
-      return;
     }
+  else
+    {
+      sys_syscall_1  (regs, mem_fn, mem, syscode);
 
-  /* no, OK execute the live system call... */
+      if (verbose)
+	fprintf(stderr, "syscall(%d): returned 0x%08x(%d)...\n",
+	  (int)syscode, regs->regs_R[MD_REG_R0], regs->regs_R[MD_REG_R0]);
+    }
+}
 
+void
+sys_syscall_1(struct regs_t *regs,	/* registers to access */
+	      mem_access_fn mem_fn,	/* generic memory accessor */
+	      struct mem_t *mem,	/* memory space to access */
+	      qword_t syscode)		/* swi code */
+{
   switch (syscode)
     {
     case ARM_SYS_exit:
@@ -4204,6 +4248,245 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
      break;
 #endif
 
+#ifdef MD_CROSS_ENDIAN
+#define ANGEL_GET_INTS(n) \
+  {
+    int nword;
+    mem_bcopy(mem_fn, mem, Read, regs->regs_R[MD_REG_R1], angel, 4 * (n));
+    for (nword = 0; nword < n; nword++)
+      angel[nword] = MD_SWAPW (angel[nword]);
+  }
+#else
+#define ANGEL_GET_INTS(n) \
+  mem_bcopy(mem_fn, mem, Read, regs->regs_R[MD_REG_R1], angel, 4 * (n));
+#endif
+
+    case ARM_SYS_AngelSWI_ARM:
+    {
+      struct regs_t r;
+      static int angel_errno;
+      word_t angel[3];
+
+      switch (regs->regs_R[MD_REG_R0])
+	{
+	case AngelSWI_Reason_Open:
+	  {
+	    char path[PATH_MAX + 1], *buf;
+	    int local_flags, fd;
+
+	    ANGEL_GET_INTS (3);
+	    if (angel[2] > PATH_MAX)
+	      {
+		regs->regs_R[MD_REG_R0] = -1;
+		angel_errno = -ENAMETOOLONG;
+		break;
+	      }
+
+	    mem_bcopy(mem_fn, mem, Read, angel[0], path, angel[2]);
+	    path[angel[2]] = 0;
+	    if (angel[2] == 3 && !memcmp (path, ":tt", 3))
+	      fd = dup (0);
+	    else
+	      {
+	        if (memchr (path, '\0', angel[2]) != NULL)
+	          {
+                    warn("filename includes NUL character, PC=0x%08p, aborting",
+	                 regs->regs_PC);
+	            abort ();
+	          }
+
+	        local_flags = 0;
+#ifdef O_BINARY
+	        if (angel[1] & 1)
+	          local_flags |= O_BINARY;
+#endif
+	        if (angel[1] & 2)
+	          local_flags |= O_RDWR;
+	        if (angel[1] & 4)
+	          local_flags |= O_CREAT | O_TRUNC;
+	        if (angel[1] & 8)
+	          local_flags |= O_APPEND;
+
+	        /* open the file */
+	        fd = open(buf, local_flags, 0666);
+	      }
+
+	    if (fd == -1)
+	      angel_errno = errno;
+	    regs->regs_R[MD_REG_R0] = fd;
+	  }
+	  break;
+
+	case AngelSWI_Reason_Close:
+	  ANGEL_GET_INTS (1);
+	  regs->regs_R[MD_REG_R0] = close (angel[0]);
+	  if (regs->regs_R[MD_REG_R0] == -1)
+	    angel_errno = errno;
+	  break;
+
+	case AngelSWI_Reason_Read:
+	  ANGEL_GET_INTS (3);
+	  r.regs_R[MD_REG_R0] = angel[0];
+	  r.regs_R[MD_REG_R1] = angel[1];
+	  r.regs_R[MD_REG_R2] = angel[2];
+	  sys_syscall_1(&r, mem_fn, mem, ARM_SYS_read);
+	  goto angel_error;
+
+	case AngelSWI_Reason_Write:
+	  ANGEL_GET_INTS (3);
+	  r.regs_R[MD_REG_R0] = angel[0];
+	  r.regs_R[MD_REG_R1] = angel[1];
+	  r.regs_R[MD_REG_R2] = angel[2];
+	  sys_syscall_1(&r, mem_fn, mem, ARM_SYS_write);
+
+	angel_error:	
+          if (r.regs_R[MD_REG_R0] < 0)
+	    {
+	      angel_errno = -r.regs_R[MD_REG_R0];
+	      regs->regs_R[MD_REG_R0] = -1;
+	    }
+	  else
+	    {
+	      /* Return number of bits *not* read/written! */
+	      regs->regs_R[MD_REG_R0] = angel[2] - r.regs_R[MD_REG_R0];
+	    }
+
+	case AngelSWI_Reason_Seek:
+	  ANGEL_GET_INTS (2);
+	  regs->regs_R[MD_REG_R0] = lseek (angel[0], (unsigned) angel[1],
+					   SEEK_SET);
+	  if (regs->regs_R[MD_REG_R0] == -1)
+	    angel_errno = errno;
+	  break;
+
+	case AngelSWI_Reason_FLen:
+	  ANGEL_GET_INTS (1);
+	  {
+	    off_t pos = lseek (angel[0], 0, SEEK_END), size;
+	    if (pos == -1)
+	      size = -1;
+	    else	
+	      size = lseek (angel[0], pos, SEEK_SET);
+	    regs->regs_R[MD_REG_R0] = size;
+	    if (size == -1)
+	      angel_errno = errno;
+	  }
+	  break;
+
+	case AngelSWI_Reason_Clock:
+	  {
+	    clock_t ret;
+#ifdef _MSC_VER
+	    __int64 clocks;
+	    static clock_t sc_clk_tck = CLOCKS_PER_SEC;
+	    ret = clock ();
+#else
+	    unsigned long long clocks;
+	    static clock_t sc_clk_tck = -1;
+	    struct tms tms;
+	    if (sc_clk_tck == -1)
+	      sc_clk_tck = sysconf(_SC_CLK_TCK);
+	    if (sc_clk_tck == -1)
+	      ret = -1;
+	    else
+	      ret = times (&tms);
+#endif
+	    if (ret != -1)
+	      {
+	        clocks = ret;
+		clocks *= 100;
+		regs->regs_R[MD_REG_R0] = clocks / CLOCKS_PER_SEC; 
+	      }
+	    else
+	      regs->regs_R[MD_REG_R0] = -1; 
+	  }
+	  break;
+
+	case AngelSWI_Reason_Time:
+	  regs->regs_R[MD_REG_R0] = time (NULL);
+	  break;
+
+	case AngelSWI_Reason_Errno:
+	  regs->regs_R[MD_REG_R0] = angel_errno;
+	  break;
+
+	case AngelSWI_Reason_ReportException:
+	case ADP_Stopped_ApplicationExit:
+	  r.regs_R[MD_REG_R0] = 0;
+	  sys_syscall_1(&r, mem_fn, mem, ARM_SYS_exit);
+	  break;
+
+	case AngelSWI_Reason_HeapInfo:
+	  {
+	    word_t heapinfo_ptr;
+	    word_t heapinfo[4];
+	    heapinfo[0] = ROUND_UP(ld_data_base + ld_data_size, MD_PAGE_SIZE);
+	    heapinfo[1] = ROUND_DOWN (ld_environ_base - (1 << 20), MD_PAGE_SIZE);
+	    heapinfo[2] = ld_environ_base;
+	    heapinfo[3] = ld_environ_base - (1 << 20);
+
+
+	    /* Read the location from the parameter block... */
+	    ANGEL_GET_INTS (1);
+	    mem_bcopy(mem_fn, mem, Read, angel[0], &heapinfo_ptr, 4);
+
+#ifdef MD_CROSS_ENDIAN
+	    heapinfo_ptr = MD_SWAPW (heapinfo_ptr);
+	    heapinfo[0] = MD_SWAPW (heapinfo[0]);
+	    heapinfo[1] = MD_SWAPW (heapinfo[1]);
+	    heapinfo[2] = MD_SWAPW (heapinfo[2]);
+	    heapinfo[3] = MD_SWAPW (heapinfo[3]);
+#endif
+
+	    /* ... and write the info there */
+	    mem_bcopy(mem_fn, mem, Write, heapinfo_ptr, heapinfo, 16);
+	  }
+	  break;
+
+	case AngelSWI_Reason_GetCmdLine:
+	  /* FIXME, cmdline not supported yet.  One argument should be easy...
+	     later.  */
+	  {
+	    word_t cmdline_ptr;
+	    word_t cmdline_size;
+	    char cmdline[6] = "a.out";
+	    ANGEL_GET_INTS (1);
+	    mem_bcopy(mem_fn, mem, Read, angel[0], &cmdline_ptr, 4);
+	    mem_bcopy(mem_fn, mem, Read, angel[0] + 4, &cmdline_size, 4);
+
+#ifdef MD_CROSS_ENDIAN
+	    cmdline_ptr = MD_SWAPW (cmdline_ptr);
+	    cmdline_size = MD_SWAPW (cmdline_size);
+#endif
+	    if (cmdline_size > 6)
+	      cmdline_size = 6; 
+	    mem_bcopy(mem_fn, mem, Write, cmdline_ptr, cmdline, cmdline_size);
+	  }
+	  break;
+
+	case AngelSWI_Reason_WriteC:
+	case AngelSWI_Reason_Write0:
+	case AngelSWI_Reason_ReadC:
+	case AngelSWI_Reason_IsTTY:
+	case AngelSWI_Reason_TmpNam:
+	case AngelSWI_Reason_Remove:
+	case AngelSWI_Reason_Rename:
+	case AngelSWI_Reason_System:
+	case AngelSWI_Reason_EnterSVC:
+          warn("unimplemented angel syscall %d, PC=0x%08p, aborting",
+	       (int)regs->regs_R[MD_REG_R0], regs->regs_PC);
+	  abort ();
+
+	default:
+          warn("invalid angel syscall %d, PC=0x%08p, winging it",
+	       (int)regs->regs_R[MD_REG_R0], regs->regs_PC);
+	  angel_errno = EINVAL;
+	  r.regs_R[MD_REG_R0] = -1;
+	  break;
+	}
+    }
+    break;
+
 
     default:
       warn("invalid/unimplemented syscall %d, PC=0x%08p, winging it",
@@ -4211,8 +4494,4 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
       /* declare an error condition */
       regs->regs_R[MD_REG_R0] = -EINVAL;
     }
-
-  if (verbose)
-    fprintf(stderr, "syscall(%d): returned 0x%08x(%d)...\n",
-      (int)syscode, regs->regs_R[MD_REG_R0], regs->regs_R[MD_REG_R0]);
 }
