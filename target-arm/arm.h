@@ -317,9 +317,12 @@ extern md_inst_t MD_NOP_INST;
 
 #endif
 
-/* fetch an instruction */
+/* fetch an instruction.  the strange XOR is a hack to turn BX instructions
+   into MOV PC, Rnn.  The encoding should be changed from c12FFF1s (where
+   c is the condition and s is the source) to c1A0F00s.  */
 #define MD_FETCH_INST(INST, MEM, PC)					\
-  { (INST) = MEM_READ_WORD((MEM), (PC)); }
+  { (INST) = MEM_READ_WORD((MEM), (PC)),				\
+    (INST) ^= (((INST) & 0xFFFFFF0) == 0x12FFF10) ? 0x8F0F10 : 0; }
 
 /*
  * target-dependent loader module configuration

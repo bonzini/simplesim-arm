@@ -1161,7 +1161,7 @@ md_get_flow(enum md_opcode op, md_inst_t inst,
 			   /* dest */(FD)+i,
 			   /* src1 */rn,
 			   /* src2 */0, 0, 0,
-			   /* src2 */sign, i*8);
+			   /* src2 */1, i*8);
 #if 0
 	    flow[nuops].op = (sign == 1) ? STFD_PU : STFD_P;
 	    flow[nuops++].inst =
@@ -1216,7 +1216,7 @@ md_get_flow(enum md_opcode op, md_inst_t inst,
 			   /* dest */(FD)+i,
 			   /* src1 */rn,
 			   /* src2 */0, 0, 0,
-			   /* src2 */sign, i*8);
+			   /* src2 */1, i*8);
 #if 0
 	    flow[nuops].op = (sign == 1) ? LDFD_PUL : LDFD_PL;
 	    flow[nuops++].inst =
