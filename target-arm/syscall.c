@@ -4359,6 +4359,7 @@ sys_syscall_1(struct regs_t *regs,	/* registers to access */
 	      /* Return number of bits *not* read/written! */
 	      regs->regs_R[MD_REG_R0] = angel[2] - r.regs_R[MD_REG_R0];
 	    }
+	  break;
 
 	case AngelSWI_Reason_Seek:
 	  ANGEL_GET_INTS (2);
