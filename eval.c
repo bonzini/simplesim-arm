@@ -80,9 +80,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-#if defined(__CYGWIN32__)
 #include <errno.h>
-#endif
 
 #include "host.h"
 #include "misc.h"
