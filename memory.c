@@ -192,80 +192,88 @@ mem_access(struct mem_t *mem,		/* memory space to access */
 	   void *vp,			/* host memory address to access */
 	   int nbytes)			/* number of bytes to access */
 {
-  byte_t *p = vp;
-
-  /* check alignments */
-  if (/* check size */(nbytes & (nbytes-1)) != 0
-      || /* check max size */nbytes > MD_PAGE_SIZE)
-    return md_fault_access;
-
-#ifdef TARGET_ARM
-  if (/* check natural alignment */(addr & (((nbytes > 4) ? 4:nbytes)-1)) != 0)
-    return md_fault_alignment;
-#else
-  if (/* check natural alignment */(addr & (nbytes-1)) != 0)
-    return md_fault_alignment;
-#endif /* TARGET_ARM */
-
-  /* perform the copy */
-  {
-    if (cmd == Read)
-      {
-	while (nbytes-- > 0)
-	  {
-	    *((byte_t *)p) = MEM_READ_BYTE(mem, addr);
-	    p += sizeof(byte_t);
-	    addr += sizeof(byte_t);
-	  }
-      }
-    else
-      {
-	while (nbytes-- > 0)
-	  {
-	    MEM_WRITE_BYTE(mem, addr, *((byte_t *)p));
-	    p += sizeof(byte_t);
-	    addr += sizeof(byte_t);
-	  }
-      }
-  }
-
-#if 0
   switch (nbytes)
     {
+    case 0:
+      break;
+
     case 1:
       if (cmd == Read)
-	*((byte_t *)p) = MEM_READ_BYTE(mem, addr);
+	*((byte_t *)vp) = MEM_READ_BYTE(mem, addr);
       else
-	MEM_WRITE_BYTE(mem, addr, *((byte_t *)p));
+	MEM_WRITE_BYTE(mem, addr, *((byte_t *)vp));
       break;
 
     case 2:
+      if (/* check natural alignment */(addr & 1) != 0)
+        return md_fault_alignment;
       if (cmd == Read)
-	*((half_t *)p) = MEM_READ_HALF(mem, addr);
+	*((half_t *)vp) = MEM_READ(mem, addr, half_t);
       else
-	MEM_WRITE_HALF(mem, addr, *((half_t *)p));
+	MEM_WRITE(mem, addr, half_t, *((half_t *)vp));
       break;
+
+    case 3:
+      return md_fault_access;
 
     case 4:
+      if (/* check natural alignment */(addr & 3) != 0)
+        return md_fault_alignment;
       if (cmd == Read)
-	*((word_t *)p) = MEM_READ_WORD(mem, addr);
+	*((word_t *)vp) = MEM_READ(mem, addr, word_t);
       else
-	MEM_WRITE_WORD(mem, addr, *((word_t *)p));
+	MEM_WRITE(mem, addr, word_t, *((word_t *)vp));
       break;
 
+#ifndef TARGET_ARM
 #ifdef HOST_HAS_QWORD
     case 8:
+      if (/* check natural alignment */(addr & 7) != 0)
+        return md_fault_alignment;
       if (cmd == Read)
-	*((qword_t *)p) = MEM_READ_QWORD(mem, addr);
+	*((qword_t *)vp) = MEM_READ(mem, addr, qword_t);
       else
-	MEM_WRITE_QWORD(mem, addr, *((qword_t *)p));
+	MEM_WRITE(mem, addr, qword_t, *((qword_t *)vp));
       break;
 #endif /* HOST_HAS_QWORD */
+#endif
 
     default:
-      break;
+      /* check alignments */
+      if (/* check size */(nbytes & (nbytes-1)) != 0
+          || /* check max size */nbytes > MD_PAGE_SIZE)
+        return md_fault_access;
+
+#ifdef TARGET_ARM
+      if (/* check natural alignment */(addr & 3) != 0)
+        return md_fault_alignment;
+#else
+      if (/* check natural alignment */(addr & (nbytes-1)) != 0)
+        return md_fault_alignment;
+#endif /* TARGET_ARM */
+
+      /* perform the copy */
+      if (cmd == Read)
+        {
+	  byte_t *p = vp;
+	  while (nbytes-- > 0)
+	    {
+	      *p = MEM_READ_BYTE(mem, addr);
+	      p++;
+	      addr += sizeof(byte_t);
+	    }
+        }
+      else
+        {
+	  byte_t *p = vp;
+	  while (nbytes-- > 0)
+	    {
+	      MEM_WRITE_BYTE(mem, addr, *p);
+	      p++;
+	      addr += sizeof(byte_t);
+	    }
+        }
     }
-#endif
 
   /* no fault... */
   return md_fault_none;

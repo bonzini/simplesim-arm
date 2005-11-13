@@ -3580,6 +3580,19 @@ spec_mem_access(struct mem_t *mem,		/* memory space to access */
   return md_fault_none;
 }
 
+static inline enum md_fault_type
+sim_mem_access(struct mem_t *mem,		/* memory space to access */
+	       enum mem_cmd cmd,		/* Read or Write access cmd */
+	       md_addr_t addr,			/* virtual address of access */
+	       void *p,				/* input/output buffer */
+	       int nbytes)			/* number of bytes to access */
+{
+  if (spec_mode)
+    return spec_mem_access(mem, cmd, addr, p, nbytes);
+  else
+    return mem_access(mem, cmd, addr, p, nbytes);
+}
+
 /* dump speculative memory state */
 static void
 mspec_dump(FILE *stream)			/* output stream */
@@ -3631,10 +3644,7 @@ simoo_mem_obj(struct mem_t *mem,		/* memory space to access */
 #endif
 
   /* else, no error, access memory */
-  if (spec_mode)
-    spec_mem_access(mem, cmd, addr, p, nbytes);
-  else
-    mem_access(mem, cmd, addr, p, nbytes);
+  sim_mem_access(mem, cmd, addr, p, nbytes);
 
   /* no error */
   return NULL;
@@ -4004,9 +4014,7 @@ union x { float f; word_t w; };
    tracer_recover() for details on this process */
 #define __READ_SPECMEM(SRC, SRC_V, FAULT)				\
   (addr = (SRC),							\
-   (spec_mode								\
-    ? ((FAULT) = spec_mem_access(mem, Read, addr, &SRC_V, sizeof(SRC_V)))\
-    : ((FAULT) = mem_access(mem, Read, addr, &SRC_V, sizeof(SRC_V)))),	\
+   ((FAULT) = sim_mem_access(mem, Read, addr, &SRC_V, sizeof(SRC_V))),	\
    SRC_V)
 
 #define READ_BYTE(SRC, FAULT)						\
@@ -4023,9 +4031,7 @@ union x { float f; word_t w; };
 
 #define __WRITE_SPECMEM(SRC, DST, DST_V, FAULT)				\
   (DST_V = (SRC), addr = (DST),						\
-   (spec_mode								\
-    ? ((FAULT) = spec_mem_access(mem, Write, addr, &DST_V, sizeof(DST_V)))\
-    : ((FAULT) = mem_access(mem, Write, addr, &DST_V, sizeof(DST_V)))))
+   ((FAULT) = sim_mem_access(mem, Write, addr, &DST_V, sizeof(DST_V))))
 
 #define WRITE_BYTE(SRC, DST, FAULT)					\
   __WRITE_SPECMEM((SRC), (DST), temp_byte, (FAULT))
