@@ -4277,7 +4277,7 @@ sys_syscall_1(struct regs_t *regs,	/* registers to access */
 	{
 	case AngelSWI_Reason_Open:
 	  {
-	    char path[PATH_MAX + 1], *buf;
+	    char path[PATH_MAX + 1];
 	    int local_flags, fd;
 
 	    ANGEL_GET_INTS (3);
@@ -4317,7 +4317,7 @@ sys_syscall_1(struct regs_t *regs,	/* registers to access */
 	          local_flags |= O_WRONLY;
 
 	        /* open the file */
-	        fd = open(buf, local_flags, 0666);
+	        fd = open(path, local_flags, 0666);
 	      }
 
 	    if (fd == -1)

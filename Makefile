@@ -175,7 +175,7 @@
 ##	Windows NT version 4.0, Cygnus CygWin/32 beta 19
 ##
 CC = gcc
-OFLAGS = -O0 -g -Wall -DMIN_SYSCALL_MODE
+OFLAGS = -O2 -g -Wall -DMIN_SYSCALL_MODE
 #OFLAGS = -O3
 MFLAGS = `./sysprobe -flags`
 MLIBS  = `./sysprobe -libs` -lm
@@ -192,7 +192,7 @@ DIFF = diff
 OEXT = o
 LEXT = a
 EEXT =
-CS = ;
+CS = &&
 X=/
 
 ##
@@ -215,7 +215,7 @@ X=/
 #OEXT = o
 #LEXT = a
 #EEXT =
-#CS = ;
+#CS = &&
 #X=/
 
 ##
@@ -238,7 +238,7 @@ X=/
 #OEXT = o
 #LEXT = a
 #EEXT =
-#CS = ;
+#CS = &&
 #X=/
 
 ##
@@ -261,7 +261,7 @@ X=/
 #OEXT = o
 #LEXT = a
 #EEXT =
-#CS = ;
+#CS = &&
 #X=/
 
 ##
@@ -284,7 +284,7 @@ X=/
 #OEXT = o
 #LEXT = a
 #EEXT =
-#CS = ;
+#CS = &&
 #X=/
 
 ##
@@ -307,7 +307,7 @@ X=/
 #OEXT = o
 #LEXT = a
 #EEXT =
-#CS = ;
+#CS = &&
 #X=/
 
 ##
@@ -410,54 +410,6 @@ PROGS = sim-fast$(EEXT) sim-safe$(EEXT) sim-uop$(EEXT) im-eio$(EEXT) \
 #
 all: sim-safe sim-uop sim-profile sim-cache sim-cheetah sim-bpred sim-outorder # sim-armulator sim-dis sim-depchk $(PROGS)
 	@echo "my work is done here..."
-
-config-pisa:
-	-$(RM) config.h machine.h machine.c machine.def loader.c symbol.c syscall.c
-	$(LN) target-pisa$(X)config.h config.h
-	$(LN) target-pisa$(X)pisa.h machine.h
-	$(LN) target-pisa$(X)pisa.c machine.c
-	$(LN) target-pisa$(X)pisa.def machine.def
-	$(LN) target-pisa$(X)loader.c loader.c
-	$(LN) target-pisa$(X)symbol.c symbol.c
-	$(LN) target-pisa$(X)syscall.c syscall.c
-	-$(RMDIR) tests
-	$(LNDIR) tests-pisa tests
-
-config-pisabig:
-	-$(RM) config.h machine.h machine.c machine.def loader.c symbol.c syscall.c
-	$(LN) target-pisa$(X)configbig.h config.h
-	$(LN) target-pisa$(X)pisa.h machine.h
-	$(LN) target-pisa$(X)pisa.c machine.c
-	$(LN) target-pisa$(X)pisa.def machine.def
-	$(LN) target-pisa$(X)loader.c loader.c
-	$(LN) target-pisa$(X)symbol.c symbol.c
-	$(LN) target-pisa$(X)syscall.c syscall.c
-	-$(RMDIR) tests
-	$(LNDIR) tests-pisa tests
-
-config-pisalit:
-	-$(RM) config.h machine.h machine.c machine.def loader.c symbol.c syscall.c
-	$(LN) target-pisa$(X)configlit.h config.h
-	$(LN) target-pisa$(X)pisa.h machine.h
-	$(LN) target-pisa$(X)pisa.c machine.c
-	$(LN) target-pisa$(X)pisa.def machine.def
-	$(LN) target-pisa$(X)loader.c loader.c
-	$(LN) target-pisa$(X)symbol.c symbol.c
-	$(LN) target-pisa$(X)syscall.c syscall.c
-	-$(RMDIR) tests
-	$(LNDIR) tests-pisa tests
-
-config-alpha:
-	-$(RM) config.h machine.h machine.c machine.def loader.c symbol.c syscall.c
-	$(LN) target-alpha$(X)config.h config.h
-	$(LN) target-alpha$(X)alpha.h machine.h
-	$(LN) target-alpha$(X)alpha.c machine.c
-	$(LN) target-alpha$(X)alpha.def machine.def
-	$(LN) target-alpha$(X)loader.c loader.c
-	$(LN) target-alpha$(X)symbol.c symbol.c
-	$(LN) target-alpha$(X)syscall.c syscall.c
-	-$(RMDIR) tests
-	$(LNDIR) tests-alpha tests
 
 config-arm:
 	-$(RM) config.h machine.h machine.c machine.def loader.c symbol.c syscall.c
@@ -582,8 +534,6 @@ clean:
 	-$(RM) *.o *.obj core *~ Makefile.bak sysprobe$(EEXT) $(PROGS)
 	cd libcheetah $(CS) $(MAKE) "RM=$(RM)" "CS=$(CS)" clean $(CS) cd ..
 	cd libexo $(CS) $(MAKE) "RM=$(RM)" "CS=$(CS)" clean $(CS) cd ..
-	cd tests-alpha $(CS) $(MAKE) "RM=$(RM)" "CS=$(CS)" clean $(CS) cd ..
-	cd tests-pisa $(CS) $(MAKE) "RM=$(RM)" "CS=$(CS)" clean $(CS) cd ..
 
 unpure:
 	rm -f sim.pure *pure*.o sim.pure.pure_hardlink sim.pure.pure_linkinfo

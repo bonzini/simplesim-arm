@@ -87,6 +87,28 @@
 #define ENDIAN_H
 
 /* data swapping functions, from big/little to little/big endian format */
+#ifdef __GNUC__
+#define SWAP_HALF(X)							\
+  ({ const half_t _x = (X);						\
+   ((_x & 0xff) << 8) | ((_x & 0xff00) >> 8); })
+#define SWAP_WORD(X)							\
+  ({ const word_t _x = (X);						\
+    (_x << 24) |							\
+   ((_x << 8)  & 0x00ff0000) |						\
+   ((_x >> 8)  & 0x0000ff00) |						\
+   ((_x >> 24) & 0x000000ff); })
+#define SWAP_QWORD(X)							\
+  ({ const qword_t _x = (X);						\
+    (_x << 56) |							\
+   ((_x << 40) & ULL(0x00ff000000000000)) |				\
+   ((_x << 24) & ULL(0x0000ff0000000000)) |				\
+   ((_x << 8)  & ULL(0x000000ff00000000)) |				\
+   ((_x >> 8)  & ULL(0x00000000ff000000)) |				\
+   ((_x >> 24) & ULL(0x0000000000ff0000)) |				\
+   ((_x >> 40) & ULL(0x000000000000ff00)) |				\
+   ((_x >> 56) & ULL(0x00000000000000ff)); })
+
+#else
 #define SWAP_HALF(X)							\
   (((((half_t)(X)) & 0xff) << 8) | ((((half_t)(X)) & 0xff00) >> 8))
 #define SWAP_WORD(X)	(((word_t)(X) << 24) |				\
@@ -101,6 +123,7 @@
 			 (((qword_t)(X) >> 24) & ULL(0x0000000000ff0000)) |\
 			 (((qword_t)(X) >> 40) & ULL(0x000000000000ff00)) |\
 			 (((qword_t)(X) >> 56) & ULL(0x00000000000000ff)))
+#endif
 
 /* recognized endian formats */
 enum endian_t { endian_big, endian_little, endian_unknown};
