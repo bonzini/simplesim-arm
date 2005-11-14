@@ -2527,79 +2527,35 @@ md_cond_ok(md_inst_t inst, word_t psr)
 {
   int res;
 
-  switch (COND)
-    {
-    case COND_EQ:
-      res = _PSR_Z(psr);
-      break;
+  /* bit 0 of the mask => Z
+     bit 1 of the mask => C
+     bit 2 of the mask => N
+     bit 3 of the mask => V */
+  static int mask[16] =
+    { 0xAAAA,			   /* COND_EQ: _PSR_Z(psr) */
+      0x5555,			   /* COND_NE: !_PSR_Z(psr); */
+      0xCCCC,			   /* COND_CS: _PSR_C(psr); */
+      0x3333,			   /* COND_CC: !_PSR_C(psr); */
+      0xF0F0,			   /* COND_MI: _PSR_N(psr); */
+      0x0F0F,			   /* COND_PL: !_PSR_N(psr); */
+      0xFF00,			   /* COND_VS: _PSR_V(psr); */
+      0x00FF,			   /* COND_VC: !_PSR_V(psr); */
+      0xCCCC & 0x5555,		   /* COND_HI: _PSR_C(psr) && !_PSR_Z(psr); */
+      0x3333 | 0xAAAA,		   /* COND_LS: !_PSR_C(psr) || _PSR_Z(psr); */
+      0x0F0F ^ 0xFF00,		   /* COND_GE: !PSR_N(psr) != _PSR_V(psr); */
+      0xF0F0 ^ 0xFF00,		   /* COND_LT: PSR_N(psr) != _PSR_V(psr); */
+      (0x0F0F ^ 0xFF00) & 0x5555,  /* COND_GT: COND_GE & COND_NE */
+      (0xF0F0 ^ 0xFF00) | 0xAAAA,  /* COND_LE: COND_LT | COND_EQ */
+      0xFFFF, /* COND_AL */
+      0, /* COND_NV */
+    };
 
-    case COND_NE:
-      res = !_PSR_Z(psr);
-      break;
-
-    case COND_CS:
-      res = _PSR_C(psr);
-      break;
-
-    case COND_CC:
-      res = !_PSR_C(psr);
-      break;
-
-    case COND_MI:
-      res = _PSR_N(psr);
-      break;
-
-    case COND_PL:
-      res = !_PSR_N(psr);
-      break;
-
-    case COND_VS:
-      res = _PSR_V(psr);
-      break;
-
-    case COND_VC:
-      res = !_PSR_V(psr);
-      break;
-
-    case COND_HI:
-      res = _PSR_C(psr) && !_PSR_Z(psr);
-      break;
-
-    case COND_LS:
-      res = !_PSR_C(psr) || _PSR_Z(psr);
-      break;
-
-    case COND_GE:
-      res = (!_PSR_N(psr) && !_PSR_V(psr)) || (_PSR_N(psr) && _PSR_V(psr));
-      break;
-
-    case COND_LT:
-      res = (_PSR_N(psr) && !_PSR_V(psr)) || (!_PSR_N(psr) && _PSR_V(psr));
-      break;
-
-    case COND_GT:
-      res = ((!_PSR_N(psr) && !_PSR_V(psr) && !_PSR_Z(psr))
-	     || (_PSR_N(psr) && _PSR_V(psr) && !_PSR_Z(psr)));
-      break;
-
-    case COND_LE:
-      res = ((_PSR_N(psr) && !_PSR_V(psr))
-	     || (!_PSR_N(psr) && _PSR_V(psr))
-	     || _PSR_Z(psr));
-      break;
-
-    case COND_AL:
-      res = TRUE;
-      break;
-
-    case COND_NV:
-      res = FALSE;
-      break;
-
-    default:
-      panic("bogus predicate condition");
-    }
-  return res;
+  res = mask[COND];
+  res >>= ((_PSR_Z(psr) & 1) << 0)
+	| ((_PSR_C(psr) & 1) << 1)
+	| ((_PSR_N(psr) & 1) << 2)
+	| ((_PSR_V(psr) & 1) << 3);
+  return res & 1;
 }
 
 word_t
