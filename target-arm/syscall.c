@@ -1122,6 +1122,11 @@ sys_syscall_1(struct regs_t *regs,	/* registers to access */
 {
   switch (syscode)
     {
+    case ARM_SYS_ni_syscall:
+      /* Linux EABI executables have the system call number in r7.  */
+      sys_syscall_1 (regs, mem_fn, mem, regs->regs_R[MD_REG_R7]);
+      break;
+
     case ARM_SYS_exit:
       /* exit jumps to the target set in main() */
       longjmp(sim_exit_buf,
