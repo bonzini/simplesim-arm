@@ -247,84 +247,6 @@ sim_uninit(void)
  * configure the execution engine
  */
 
-/*
- * precise architected register accessors
- */
-
-#if 0
-/* next program counter */
-#define SET_NPC(EXPR)		(regs.regs_NPC = (EXPR))
-
-/* current program counter */
-#define CPC			(regs.regs_PC)
-
-/* general purpose registers */
-#define GPR(N)			(regs.regs_R[N])
-#define SET_GPR(N,EXPR)		(regs.regs_R[N] = (EXPR))
-
-#if defined(TARGET_PISA)
-
-/* floating point registers, L->word, F->single-prec, D->double-prec */
-#define FPR_L(N)		(regs.regs_F.l[(N)])
-#define SET_FPR_L(N,EXPR)	(regs.regs_F.l[(N)] = (EXPR))
-#define FPR_F(N)		(regs.regs_F.f[(N)])
-#define SET_FPR_F(N,EXPR)	(regs.regs_F.f[(N)] = (EXPR))
-#define FPR_D(N)		(regs.regs_F.d[(N) >> 1])
-#define SET_FPR_D(N,EXPR)	(regs.regs_F.d[(N) >> 1] = (EXPR))
-
-/* miscellaneous register accessors */
-#define SET_HI(EXPR)		(regs.regs_C.hi = (EXPR))
-#define HI			(regs.regs_C.hi)
-#define SET_LO(EXPR)		(regs.regs_C.lo = (EXPR))
-#define LO			(regs.regs_C.lo)
-#define FCC			(regs.regs_C.fcc)
-#define SET_FCC(EXPR)		(regs.regs_C.fcc = (EXPR))
-
-#elif defined(TARGET_ALPHA)
-
-/* floating point registers, L->word, F->single-prec, D->double-prec */
-#define FPR_Q(N)		(regs.regs_F.q[N])
-#define SET_FPR_Q(N,EXPR)	(regs.regs_F.q[N] = (EXPR))
-#define FPR(N)			(regs.regs_F.d[(N)])
-#define SET_FPR(N,EXPR)		(regs.regs_F.d[(N)] = (EXPR))
-
-/* miscellaneous register accessors */
-#define FPCR			(regs.regs_C.fpcr)
-#define SET_FPCR(EXPR)		(regs.regs_C.fpcr = (EXPR))
-#define UNIQ			(regs.regs_C.uniq)
-#define SET_UNIQ(EXPR)		(regs.regs_C.uniq = (EXPR))
-
-#else
-#error No ISA target defined...
-#endif
-
-/* precise architected memory state accessor macros */
-#define READ_BYTE(SRC, FAULT)						\
-  ((FAULT) = md_fault_none, MEM_READ_BYTE(mem, addr = (SRC)))
-#define READ_HALF(SRC, FAULT)						\
-  ((FAULT) = md_fault_none, MEM_READ_HALF(mem, addr = (SRC)))
-#define READ_WORD(SRC, FAULT)						\
-  ((FAULT) = md_fault_none, MEM_READ_WORD(mem, addr = (SRC)))
-#ifdef HOST_HAS_QWORD
-#define READ_QWORD(SRC, FAULT)						\
-  ((FAULT) = md_fault_none, MEM_READ_QWORD(mem, addr = (SRC)))
-#endif /* HOST_HAS_QWORD */
-
-#define WRITE_BYTE(SRC, DST, FAULT)					\
-  ((FAULT) = md_fault_none, MEM_WRITE_BYTE(mem, addr = (DST), (SRC)))
-#define WRITE_HALF(SRC, DST, FAULT)					\
-  ((FAULT) = md_fault_none, MEM_WRITE_HALF(mem, addr = (DST), (SRC)))
-#define WRITE_WORD(SRC, DST, FAULT)					\
-  ((FAULT) = md_fault_none, MEM_WRITE_WORD(mem, addr = (DST), (SRC)))
-#ifdef HOST_HAS_QWORD
-#define WRITE_QWORD(SRC, DST, FAULT)					\
-  ((FAULT) = md_fault_none, MEM_WRITE_QWORD(mem, addr = (DST), (SRC)))
-#endif /* HOST_HAS_QWORD */
-
-/* system call handler macro */
-#define SYSCALL(INST)	sys_syscall(&regs, mem_access, mem, INST, TRUE)
-#endif
-
 /* start simulation, program loaded, processor precise state initialized */
 void
 sim_main(void)
@@ -344,18 +266,11 @@ sim_main(void)
   /* check for DLite debugger entry condition */
   if (dlite_check_break(regs.regs_PC, /* !access */0, /* addr */0, 0, 0))
     dlite_main(regs.regs_PC - sizeof(md_inst_t),
-	       regs.regs_PC, sim_num_insn, &regs, mem);
+               regs.regs_PC, sim_num_insn, &regs, mem);
 
   while (TRUE)
     {
       /* maintain $r0 semantics */
-#ifndef TARGET_ARM
-      regs.regs_R[MD_REG_ZERO] = 0;
-#endif
-#ifdef TARGET_ALPHA
-      regs.regs_F.d[MD_REG_ZERO] = 0.0;
-#endif /* TARGET_ALPHA */
-
       if (regs.regs_PC >= ld_text_bound)
 	{
 	  info("all instructions decoded...");
@@ -377,52 +292,15 @@ sim_main(void)
       /* decode the instruction */
       MD_SET_OPCODE(op, inst);
 
-#if 0
-      /* execute the instruction */
-      switch (op)
-	{
-#define DEFINST(OP,MSK,NAME,OPFORM,RES,FLAGS,O1,O2,I1,I2,I3,I4)		\
-	case OP:							\
-          SYMCAT(OP,_IMPL);						\
-          break;
-#define DEFLINK(OP,MSK,NAME,MASK,SHIFT)					\
-        case OP:							\
-          panic("attempted to execute a linking opcode");
-#define CONNECT(OP)
-#define DECLARE_FAULT(FAULT)						\
-	  { fault = (FAULT); break; }
-#include "machine.def"
-	default:
-	  panic("attempted to execute a bogus opcode");
-      }
-
-      if (fault != md_fault_none)
-	fatal("fault (%d) detected @ 0x%08p", fault, regs.regs_PC);
-#endif
-
-      if (verbose)
-	{
-	  myfprintf(stderr, "%10n [xor: 0x%08x] @ 0x%08p: ",
-		    sim_num_insn, md_xor_regs(&regs), regs.regs_PC);
-	  md_print_insn(inst, regs.regs_PC, stderr);
-	  if (MD_OP_FLAGS(op) & F_MEM)
-	    myfprintf(stderr, "  mem: 0x%08p", addr);
-	  fprintf(stderr, "\n");
-	  myfprintf(stderr, "           op: %d, inst: 0x%08x\n", op, inst);
-	  /* fflush(stderr); */
-	}
-
-      if (MD_OP_FLAGS(op) & F_MEM)
-	{
-	  sim_num_refs++;
-	  if (MD_OP_FLAGS(op) & F_STORE)
-	    is_write = TRUE;
-	}
+      myfprintf(stderr, "%10n @ 0x%08p: ",
+		sim_num_insn, regs.regs_PC);
+      md_print_insn(inst, regs.regs_PC, stderr);
+      fprintf(stderr, "\n");
+      myfprintf(stderr, "           op: %d, inst: 0x%08x\n", op, inst);
 
       /* check for DLite debugger entry condition */
-      if (dlite_check_break(regs.regs_NPC,
-			    is_write ? ACCESS_WRITE : ACCESS_READ,
-			    addr, sim_num_insn, sim_num_insn))
+      if (dlite_check_break(regs.regs_NPC, ACCESS_READ,
+			    0, sim_num_insn, sim_num_insn))
 	dlite_main(regs.regs_PC, regs.regs_NPC, sim_num_insn, &regs, mem);
 
       /* go to the next instruction */
