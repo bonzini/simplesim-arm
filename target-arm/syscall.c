@@ -279,7 +279,7 @@ int getdirentries(int fd, char *buf, int nbytes, long *basep);
 #ifdef __FreeBSD__
 #include <sys/ioctl_compat.h>
 #else
-#ifdef __LINUX__
+#ifdef __linux__
 #include <termio.h>
 #endif
 #endif
