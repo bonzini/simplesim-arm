@@ -6,3 +6,20 @@ precious ^syscall\.c$
 precious ^sysprobe$
 precious ^sim-[a-z]*$
 precious ^tests$
+
+precious ^INSTALL$
+precious ^Makefile$
+precious ^Makefile.in$
+precious ^aclocal.m4$
+precious ^autom4te.cache$
+precious ^autoscan.log$
+precious ^config.h.in$
+precious ^config.log$
+precious ^config.status$
+precious ^configure$
+precious ^depcomp$
+precious ^install-sh$
+precious ^missing$
+precious ^stamp-h1$
+precious ^.deps$
+
