@@ -4510,3 +4510,74 @@ sys_syscall_1(struct regs_t *regs,	/* registers to access */
       regs->regs_R[MD_REG_R0] = -EINVAL;
     }
 }
+
+void
+_afu1(struct regs_t *regs,
+      mem_access_fn mem_fn,
+      struct mem_t *mem,
+      int out1, int out2,
+      int in1, int in2, int in3, int in4)
+{
+}
+
+
+void
+_afu2(struct regs_t *regs,
+      mem_access_fn mem_fn,
+      struct mem_t *mem,
+      int out1, int out2,
+      int in1, int in2, int in3, int in4)
+{
+}
+
+
+void
+_afu3(struct regs_t *regs,
+      mem_access_fn mem_fn,
+      struct mem_t *mem,
+      int out1, int out2,
+      int in1, int in2, int in3, int in4)
+{
+}
+
+
+void
+_afu4(struct regs_t *regs,
+      mem_access_fn mem_fn,
+      struct mem_t *mem,
+      int out1, int out2,
+      int in1, int in2, int in3, int in4)
+{
+}
+
+
+void
+_afu5(struct regs_t *regs,
+      mem_access_fn mem_fn,
+      struct mem_t *mem,
+      int out1, int out2,
+      int in1, int in2, int in3, int in4)
+{
+}
+
+
+void
+_afu6(struct regs_t *regs,
+      mem_access_fn mem_fn,
+      struct mem_t *mem,
+      int out1, int out2,
+      int in1, int in2, int in3, int in4)
+{
+}
+
+
+void
+_afu7(struct regs_t *regs,
+      mem_access_fn mem_fn,
+      struct mem_t *mem,
+      int out1, int out2,
+      int in1, int in2, int in3, int in4)
+{
+}
+
+

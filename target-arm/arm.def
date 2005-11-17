@@ -367,6 +367,58 @@ DEFLINK(CDXPRE_LINK, 0x0d, "cdxpre_link", 8, 0x0f)
 
 DEFLINK(CPROC_LINK, 0x0e, "cproc_link", 8, 0x0f)
 
+DEFLINK(AFU_SWI_LINK, 0x0f, "cproc_link", 21, 0x07)
+
+CONNECT(ALUREG0_LINK)
+
+#define BIT20	(inst & 0x100000)
+#define IN1	((inst & 0xF0) != 0xF0)
+#define IN2	((inst & 0xF00) != 0xF00)
+#define IN3	((inst & 0xF000) != 0xF000)
+#define IN4	((inst & 0xF0000) != 0xF0000)
+
+#define AFU_IMPL(n)							       \
+  {									       \
+    if (_afu##n)							       \
+      _afu##n (&regs, mem_access, mem, inst & 15,			       \
+	 BIT20 ? (inst >> 4) & 15 : 15, 				       \
+	 !BIT20 || (IN2 && IN3 && IN4) ? (inst >> 4) & 15 : (inst >> 8) & 15,  \
+	 !BIT20 || (IN2 && IN3 && IN4) ? (inst >> 8) & 15 : (inst >> 12) & 15, \
+	 !BIT20 || (IN2 && IN3 && IN4) ? (inst >> 12) & 15 : (inst >> 16) & 15,\
+	 !BIT20 || (IN2 && IN3 && IN4) ? (inst >> 16) & 15 : 15);	       \
+  }
+
+#define DEFAFU(n)							\
+DEFINST(AFU##n,			n,					\
+	"swi",			"%S",					\
+	NA,			F_ICOMP,				\
+									\
+	/* The outputs... */						\
+	(inst & 15),							\
+	BIT20 ? (inst >> 4) & 15 : DNA,					\
+	DNA,								\
+									\
+	/* The inputs...  */						\
+	(inst & 0xF0) != 0xF0 ? (inst >> 4) & 15 : DNA,			\
+	(inst & 0xF00) != 0xF00 ? (inst >> 8) & 15 : DNA,		\
+	(inst & 0xF000) != 0xF000 ? (inst >> 12) & 15 : DNA,		\
+	(inst & 0xF0000) != 0xF0000 ? (inst >> 16) & 15 : DNA)
+
+#define AFU1_IMPL AFU_IMPL(1)
+#define AFU2_IMPL AFU_IMPL(2)
+#define AFU3_IMPL AFU_IMPL(3)
+#define AFU4_IMPL AFU_IMPL(4)
+#define AFU5_IMPL AFU_IMPL(5)
+#define AFU6_IMPL AFU_IMPL(6)
+#define AFU7_IMPL AFU_IMPL(7)
+DEFAFU(1)
+DEFAFU(2)
+DEFAFU(3)
+DEFAFU(4)
+DEFAFU(5)
+DEFAFU(6)
+DEFAFU(7)
+
 #define SWI_IMPL							\
   {									\
     if (COND_VALID(PSR))						\
@@ -374,13 +426,11 @@ DEFLINK(CPROC_LINK, 0x0e, "cproc_link", 8, 0x0f)
 	SYSCALL(inst);							\
       }									\
   }
-DEFINST(SWI,			0x0f,
+DEFINST(SWI,			0,
 	"swi%c",		"%S",
 	NA,			F_TRAP,
 	DNA, DNA, DNA,		DCOND, DNA, DNA, DNA)
 
-
-CONNECT(ALUREG0_LINK)
 
 DEFLINK(ALUREG0a_LINK, 0x0f00, "alureg0a_link", 20, 0x0f)
 

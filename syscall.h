@@ -127,4 +127,67 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 	    md_inst_t inst,		/* system call inst */
 	    int traceable);		/* traceable system call? */
 
-#endif /* SYSCALL_H */
+void
+_afu1(struct regs_t *regs,	        /* registers to access */
+     mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     int out1, int out2,
+     int in1, int in2, int in3, int in4);
+
+/* execute AFU instructions */
+void
+_afu2(struct regs_t *regs,	        /* registers to access */
+     mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     int out1, int out2,
+     int in1, int in2, int in3, int in4);
+
+/* execute AFU instructions */
+void
+_afu3(struct regs_t *regs,	        /* registers to access */
+     mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     int out1, int out2,
+     int in1, int in2, int in3, int in4);
+
+/* execute AFU instructions */
+void
+_afu4(struct regs_t *regs,	        /* registers to access */
+     mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     int out1, int out2,
+     int in1, int in2, int in3, int in4);
+
+/* execute AFU instructions */
+void
+_afu5(struct regs_t *regs,	        /* registers to access */
+     mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     int out1, int out2,
+     int in1, int in2, int in3, int in4);
+
+/* execute AFU instructions */
+void
+_afu6(struct regs_t *regs,	        /* registers to access */
+     mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     int out1, int out2,
+     int in1, int in2, int in3, int in4);
+
+/* execute AFU instructions */
+void
+_afu7(struct regs_t *regs,	        /* registers to access */
+     mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     int out1, int out2,
+     int in1, int in2, int in3, int in4);
+
+#pragma weak _afu1
+#pragma weak _afu2
+#pragma weak _afu3
+#pragma weak _afu4
+#pragma weak _afu5
+#pragma weak _afu6
+#pragma weak _afu7
+
+#endif
