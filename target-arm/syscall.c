@@ -4511,73 +4511,58 @@ sys_syscall_1(struct regs_t *regs,	/* registers to access */
     }
 }
 
+/* execute AFU instructions */
 void
-_afu1(struct regs_t *regs,
-      mem_access_fn mem_fn,
-      struct mem_t *mem,
-      int out1, int out2,
-      int in1, int in2, int in3, int in4)
-{
-}
+(*_afu1)(struct regs_t *regs,	        /* registers to access */
+     mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     int out1, int out2,
+     int in1, int in2, int in3, int in4) = NULL;
 
-
+/* execute AFU instructions */
 void
-_afu2(struct regs_t *regs,
-      mem_access_fn mem_fn,
-      struct mem_t *mem,
-      int out1, int out2,
-      int in1, int in2, int in3, int in4)
-{
-}
+(*_afu2)(struct regs_t *regs,	        /* registers to access */
+     mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     int out1, int out2,
+     int in1, int in2, int in3, int in4) = NULL;
 
-
+/* execute AFU instructions */
 void
-_afu3(struct regs_t *regs,
-      mem_access_fn mem_fn,
-      struct mem_t *mem,
-      int out1, int out2,
-      int in1, int in2, int in3, int in4)
-{
-}
+(*_afu3)(struct regs_t *regs,	        /* registers to access */
+     mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     int out1, int out2,
+     int in1, int in2, int in3, int in4) = NULL;
 
-
+/* execute AFU instructions */
 void
-_afu4(struct regs_t *regs,
-      mem_access_fn mem_fn,
-      struct mem_t *mem,
-      int out1, int out2,
-      int in1, int in2, int in3, int in4)
-{
-}
+(*_afu4)(struct regs_t *regs,	        /* registers to access */
+     mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     int out1, int out2,
+     int in1, int in2, int in3, int in4) = NULL;
 
-
+/* execute AFU instructions */
 void
-_afu5(struct regs_t *regs,
-      mem_access_fn mem_fn,
-      struct mem_t *mem,
-      int out1, int out2,
-      int in1, int in2, int in3, int in4)
-{
-}
+(*_afu5)(struct regs_t *regs,	        /* registers to access */
+     mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     int out1, int out2,
+     int in1, int in2, int in3, int in4) = NULL;
 
-
+/* execute AFU instructions */
 void
-_afu6(struct regs_t *regs,
-      mem_access_fn mem_fn,
-      struct mem_t *mem,
-      int out1, int out2,
-      int in1, int in2, int in3, int in4)
-{
-}
+(*_afu6)(struct regs_t *regs,	        /* registers to access */
+     mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     int out1, int out2,
+     int in1, int in2, int in3, int in4) = NULL;
 
-
+/* execute AFU instructions */
 void
-_afu7(struct regs_t *regs,
-      mem_access_fn mem_fn,
-      struct mem_t *mem,
-      int out1, int out2,
-      int in1, int in2, int in3, int in4)
-{
-}
-
-
+(*_afu7)(struct regs_t *regs,	        /* registers to access */
+     mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     int out1, int out2,
+     int in1, int in2, int in3, int in4) = NULL;

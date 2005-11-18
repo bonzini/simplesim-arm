@@ -110,6 +110,7 @@
 #include <signal.h>
 #include <sys/types.h>
 #ifndef _MSC_VER
+#include <dlfcn.h>
 #include <unistd.h>
 #include <sys/time.h>
 #endif
@@ -125,6 +126,7 @@
 #include "dlite.h"
 #include "options.h"
 #include "stats.h"
+#include "syscall.h"
 #include "loader.h"
 #include "sim.h"
 
@@ -178,6 +180,9 @@ struct stat_sdb_t *sim_sdb;
 char *sim_eio_fname = NULL;
 char *sim_chkpt_fname = NULL;
 FILE *sim_eio_fd = NULL;
+
+/* AFU interface */
+char *sim_afu_fname = NULL;
 
 /* redirected program/simulator output file names */
 static char *sim_simout = NULL;
@@ -319,6 +324,7 @@ main(int argc, char **argv, char **envp)
   opt_reg_string(sim_odb, "-chkpt", "restore EIO trace execution from <fname>",
 		 &sim_chkpt_fname, /* default */NULL, /* !print */FALSE, NULL);
 
+  /* afu shared library */
   /* stdio redirection options */
   opt_reg_string(sim_odb, "-redir:sim",
 		 "redirect simulator output to file (non-interactive only)",
@@ -329,6 +335,11 @@ main(int argc, char **argv, char **envp)
 		 &sim_progout, /* default */NULL, /* !print */FALSE, NULL);
 
 #ifndef _MSC_VER
+  opt_reg_string(sim_odb, "-afu:so",
+		 "shared library implementing _afu1 to _afu7 functions",
+		 &sim_afu_fname,
+		 /* default */NULL, /* !print */FALSE, NULL);
+
   /* scheduling priority option */
   opt_reg_int(sim_odb, "-nice",
 	      "simulator scheduling priority", &nice_priority,
@@ -343,6 +354,21 @@ main(int argc, char **argv, char **envp)
   /* parse simulator options */
   exec_index = -1;
   opt_process_options(sim_odb, argc, argv);
+
+#ifndef _MSC_VER
+  /* AFU? */
+  if (sim_afu_fname != NULL)
+    {
+      void *sohandle = dlopen (sim_afu_fname, 0);
+      _afu1 = dlsym (sohandle, "_afu1");
+      _afu2 = dlsym (sohandle, "_afu2");
+      _afu3 = dlsym (sohandle, "_afu3");
+      _afu4 = dlsym (sohandle, "_afu4");
+      _afu5 = dlsym (sohandle, "_afu5");
+      _afu6 = dlsym (sohandle, "_afu6");
+      _afu7 = dlsym (sohandle, "_afu7");
+    }
+#endif
 
   /* redirect I/O? */
   if (sim_simout != NULL)

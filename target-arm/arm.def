@@ -367,9 +367,9 @@ DEFLINK(CDXPRE_LINK, 0x0d, "cdxpre_link", 8, 0x0f)
 
 DEFLINK(CPROC_LINK, 0x0e, "cproc_link", 8, 0x0f)
 
-DEFLINK(AFU_SWI_LINK, 0x0f, "cproc_link", 21, 0x07)
+DEFLINK(AFU_SWI_LINK, 0x0f, "afu_swi_link", 21, 0x07)
 
-CONNECT(ALUREG0_LINK)
+CONNECT(AFU_SWI_LINK)
 
 #define BIT20	(inst & 0x100000)
 #define IN1	((inst & 0xF0) != 0xF0)
@@ -390,7 +390,7 @@ CONNECT(ALUREG0_LINK)
 
 #define DEFAFU(n)							\
 DEFINST(AFU##n,			n,					\
-	"swi",			"%S",					\
+	"swi",			"%S ;; afu" #n,				\
 	NA,			F_ICOMP,				\
 									\
 	/* The outputs... */						\
@@ -431,6 +431,8 @@ DEFINST(SWI,			0,
 	NA,			F_TRAP,
 	DNA, DNA, DNA,		DCOND, DNA, DNA, DNA)
 
+
+CONNECT(ALUREG0_LINK)
 
 DEFLINK(ALUREG0a_LINK, 0x0f00, "alureg0a_link", 20, 0x0f)
 
