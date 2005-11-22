@@ -4513,56 +4513,49 @@ sys_syscall_1(struct regs_t *regs,	/* registers to access */
 
 /* execute AFU instructions */
 void
-(*_afu1)(struct regs_t *regs,	        /* registers to access */
-     mem_access_fn mem_fn,              /* generic memory accessor */
+(*_afu1)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     int out1, int out2,
-     int in1, int in2, int in3, int in4) = NULL;
+     md_gpr_t *out1, md_gpr_t *out2,
+     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4) = NULL;
 
 /* execute AFU instructions */
 void
-(*_afu2)(struct regs_t *regs,	        /* registers to access */
-     mem_access_fn mem_fn,              /* generic memory accessor */
+(*_afu2)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     int out1, int out2,
-     int in1, int in2, int in3, int in4) = NULL;
+     md_gpr_t *out1, md_gpr_t *out2,
+     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4) = NULL;
 
 /* execute AFU instructions */
 void
-(*_afu3)(struct regs_t *regs,	        /* registers to access */
-     mem_access_fn mem_fn,              /* generic memory accessor */
+(*_afu3)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     int out1, int out2,
-     int in1, int in2, int in3, int in4) = NULL;
+     md_gpr_t *out1, md_gpr_t *out2,
+     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4) = NULL;
 
 /* execute AFU instructions */
 void
-(*_afu4)(struct regs_t *regs,	        /* registers to access */
-     mem_access_fn mem_fn,              /* generic memory accessor */
+(*_afu4)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     int out1, int out2,
-     int in1, int in2, int in3, int in4) = NULL;
+     md_gpr_t *out1, md_gpr_t *out2,
+     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4) = NULL;
 
 /* execute AFU instructions */
 void
-(*_afu5)(struct regs_t *regs,	        /* registers to access */
-     mem_access_fn mem_fn,              /* generic memory accessor */
+(*_afu5)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     int out1, int out2,
-     int in1, int in2, int in3, int in4) = NULL;
+     md_gpr_t *out1, md_gpr_t *out2,
+     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4) = NULL;
 
 /* execute AFU instructions */
 void
-(*_afu6)(struct regs_t *regs,	        /* registers to access */
-     mem_access_fn mem_fn,              /* generic memory accessor */
+(*_afu6)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     int out1, int out2,
-     int in1, int in2, int in3, int in4) = NULL;
+     md_gpr_t *out1, md_gpr_t *out2,
+     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4) = NULL;
 
 /* execute AFU instructions */
 void
-(*_afu7)(struct regs_t *regs,	        /* registers to access */
-     mem_access_fn mem_fn,              /* generic memory accessor */
+(*_afu7)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     int out1, int out2,
-     int in1, int in2, int in3, int in4) = NULL;
+     md_gpr_t *out1, md_gpr_t *out2,
+     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4) = NULL;

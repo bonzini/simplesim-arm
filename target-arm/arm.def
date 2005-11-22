@@ -377,15 +377,23 @@ CONNECT(AFU_SWI_LINK)
 #define IN3	((inst & 0xF000) != 0xF000)
 #define IN4	((inst & 0xF0000) != 0xF0000)
 
-#define AFU_IMPL(n)							       \
-  {									       \
-    if (_afu##n)							       \
-      _afu##n (&regs, mem_access, mem, inst & 15,			       \
-	 BIT20 ? (inst >> 4) & 15 : 15, 				       \
-	 !BIT20 || (IN2 && IN3 && IN4) ? (inst >> 4) & 15 : (inst >> 8) & 15,  \
-	 !BIT20 || (IN2 && IN3 && IN4) ? (inst >> 8) & 15 : (inst >> 12) & 15, \
-	 !BIT20 || (IN2 && IN3 && IN4) ? (inst >> 12) & 15 : (inst >> 16) & 15,\
-	 !BIT20 || (IN2 && IN3 && IN4) ? (inst >> 16) & 15 : 15);	       \
+#define AFU_IMPL(n)							\
+  {									\
+    if (_afu##n)							\
+      {									\
+	md_gpr_t *out1 = &regs.regs_R[inst & 15];			\
+	md_gpr_t *out2 = BIT20 ? &regs.regs_R[(inst >> 4) & 15] : NULL;	\
+	md_gpr_t inputs = !BIT20 || (IN2 && IN3 && IN4)			\
+		     ? (inst >> 4)					\
+		     : (inst >> 8) | 0xF000;				\
+	md_gpr_t in1 = regs.regs_R[inputs & 15];			\
+	md_gpr_t in2 = regs.regs_R[(inputs >> 4) & 15];			\
+	md_gpr_t in3 = regs.regs_R[(inputs >> 8) & 15];			\
+	md_gpr_t in4 = regs.regs_R[(inputs >> 12) & 15];		\
+        _afu##n (mem_access, mem, out1, out2, in1, in2, in3, in4);	\
+      }									\
+    else								\
+      abort ();								\
   }
 
 #define DEFAFU(n)							\
@@ -399,10 +407,10 @@ DEFINST(AFU##n,			n,					\
 	DNA,								\
 									\
 	/* The inputs...  */						\
-	(inst & 0xF0) != 0xF0 ? (inst >> 4) & 15 : DNA,			\
-	(inst & 0xF00) != 0xF00 ? (inst >> 8) & 15 : DNA,		\
-	(inst & 0xF000) != 0xF000 ? (inst >> 12) & 15 : DNA,		\
-	(inst & 0xF0000) != 0xF0000 ? (inst >> 16) & 15 : DNA)
+	!BIT20 || (IN2 && IN3 && IN4) ? (inst >> 4) & 15 : DNA,		\
+	IN2 ? (inst >> 8) & 15 : DNA,					\
+	IN3 ? (inst >> 12) & 15 : DNA,					\
+	IN4 ? (inst >> 16) & 15 : DNA)
 
 #define AFU1_IMPL AFU_IMPL(1)
 #define AFU2_IMPL AFU_IMPL(2)
