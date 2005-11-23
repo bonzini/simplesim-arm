@@ -12,6 +12,9 @@ AC_PROG_LN_S
 AC_PROG_RANLIB
 AC_PROG_MAKE_SET
 
+AC_SEARCH_LIBS(dlsym, dl, [LIBS="$LIBS -ldl"])
+AC_SEARCH_LIBS(sin, m, [LIBS="$LIBS -lm"])
+
 AC_CONFIG_LINKS(config.h:target-arm/config.h)
 AC_CONFIG_LINKS(machine.h:target-arm/arm.h)
 AC_CONFIG_LINKS(machine.c:target-arm/arm.c)

@@ -2,7 +2,7 @@ AUTOMAKE_OPTIONS = foreign
 
 AM_CPPFLAGS = -Wall -DMIN_SYSCALL_MODE $(BINUTILS_INC) $(FFLAGS) -DARMULATOR -DMODE32 -DMODET
 AM_CFLAGS = `./sysprobe -flags`
-AM_LDFLAGS  = `./sysprobe -libs` -lm $(BINUTILS_LIB)
+AM_LDFLAGS  = `./sysprobe -libs` $(BINUTILS_LIB)
 
 AR = ar
 RANLIB = @RANLIB@
@@ -100,46 +100,46 @@ libcheetah/libcheetah.a:
 
 sysprobe$(EXEEXT):	sysprobe.c
 	$(CC) $(FFLAGS) -o sysprobe$(EXEEXT) sysprobe.c
-	@echo endian probe results: $(ENDIAN)
-	@echo probe flags: $(MFLAGS)
-	@echo probe libs: $(MLIBS)
+	@echo endian probe results: `./sysprobe -s`
+	@echo probe flags: $(AM_CFLAGS) $(FFLAGS)
+	@echo probe libs: $(AM_LDFLAGS) $(LIBS)
 
 sysprobe$(EXEEXT): AM_CFLAGS = 
 sysprobe$(EXEEXT): AM_LDFLAGS = -lm $(BINUTILS_LIB)
 
 sim-tests sim-tests-nt: sysprobe$(EXEEXT) $(PROGS)
 	cd tests $(CS) \
-	$(MAKE) "MAKE=$(MAKE)" "RM=$(RM)" "ENDIAN=$(ENDIAN)" tests \
+	$(MAKE) "MAKE=$(MAKE)" "RM=$(RM)" "ENDIAN=`./sysprobe -s`" tests \
 		"DIFF=$(DIFF)" "SIM_DIR=.." "SIM_BIN=sim-fast$(EXEEXT)" \
 		"X=/" "CS=$(CS)" $(CS) \
 	cd ..
 	cd tests $(CS) \
-	$(MAKE) "MAKE=$(MAKE)" "RM=$(RM)" "ENDIAN=$(ENDIAN)" tests \
+	$(MAKE) "MAKE=$(MAKE)" "RM=$(RM)" "ENDIAN=`./sysprobe -s`" tests \
 		"DIFF=$(DIFF)" "SIM_DIR=.." "SIM_BIN=sim-safe$(EXEEXT)" \
 		"X=/" "CS=$(CS)" $(CS) \
 	cd ..
 	cd tests $(CS) \
-	$(MAKE) "MAKE=$(MAKE)" "RM=$(RM)" "ENDIAN=$(ENDIAN)" tests \
+	$(MAKE) "MAKE=$(MAKE)" "RM=$(RM)" "ENDIAN=`./sysprobe -s`" tests \
 		"DIFF=$(DIFF)" "SIM_DIR=.." "SIM_BIN=sim-cache$(EXEEXT)" \
 		"X=/" "CS=$(CS)" $(CS) \
 	cd ..
 	cd tests $(CS) \
-	$(MAKE) "MAKE=$(MAKE)" "RM=$(RM)" "ENDIAN=$(ENDIAN)" tests \
+	$(MAKE) "MAKE=$(MAKE)" "RM=$(RM)" "ENDIAN=`./sysprobe -s`" tests \
 		"DIFF=$(DIFF)" "SIM_DIR=.." "SIM_BIN=sim-cheetah$(EXEEXT)" \
 		"X=/" "CS=$(CS)" $(CS) \
 	cd ..
 	cd tests $(CS) \
-	$(MAKE) "MAKE=$(MAKE)" "RM=$(RM)" "ENDIAN=$(ENDIAN)" tests \
+	$(MAKE) "MAKE=$(MAKE)" "RM=$(RM)" "ENDIAN=`./sysprobe -s`" tests \
 		"DIFF=$(DIFF)" "SIM_DIR=.." "SIM_BIN=sim-bpred$(EXEEXT)" \
 		"X=/" "CS=$(CS)" $(CS) \
 	cd ..
 	cd tests $(CS) \
-	$(MAKE) "MAKE=$(MAKE)" "RM=$(RM)" "ENDIAN=$(ENDIAN)" tests \
+	$(MAKE) "MAKE=$(MAKE)" "RM=$(RM)" "ENDIAN=`./sysprobe -s`" tests \
 		"DIFF=$(DIFF)" "SIM_DIR=.." "SIM_BIN=sim-profile$(EXEEXT)" \
 		"X=/" "CS=$(CS)" "SIM_OPTS=-all" $(CS) \
 	cd ..
 	cd tests $(CS) \
-	$(MAKE) "MAKE=$(MAKE)" "RM=$(RM)" "ENDIAN=$(ENDIAN)" tests \
+	$(MAKE) "MAKE=$(MAKE)" "RM=$(RM)" "ENDIAN=`./sysprobe -s`" tests \
 		"DIFF=$(DIFF)" "SIM_DIR=.." "SIM_BIN=sim-outorder$(EXEEXT)" \
 		"X=/" "CS=$(CS)" $(CS) \
 	cd ..
