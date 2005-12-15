@@ -381,15 +381,15 @@ CONNECT(AFU_SWI_LINK)
   {									\
     if (_afu##n)							\
       {									\
-	md_gpr_t *out1 = &regs.regs_R[inst & 15];			\
-	md_gpr_t *out2 = BIT20 ? &regs.regs_R[(inst >> 4) & 15] : NULL;	\
-	md_gpr_t inputs = !BIT20 || (IN2 && IN3 && IN4)			\
+	word_t *out1 = &regs.regs_R[inst & 15];				\
+	word_t *out2 = BIT20 ? &regs.regs_R[(inst >> 4) & 15] : NULL;	\
+	int inputs = !BIT20 || (IN2 && IN3 && IN4)			\
 		     ? (inst >> 4)					\
 		     : (inst >> 8) | 0xF000;				\
-	md_gpr_t in1 = regs.regs_R[inputs & 15];			\
-	md_gpr_t in2 = regs.regs_R[(inputs >> 4) & 15];			\
-	md_gpr_t in3 = regs.regs_R[(inputs >> 8) & 15];			\
-	md_gpr_t in4 = regs.regs_R[(inputs >> 12) & 15];		\
+	word_t in1 = regs.regs_R[inputs & 15];				\
+	word_t in2 = regs.regs_R[(inputs >> 4) & 15];			\
+	word_t in3 = regs.regs_R[(inputs >> 8) & 15];			\
+	word_t in4 = regs.regs_R[(inputs >> 12) & 15];			\
         _afu##n (mem_access, mem, out1, out2, in1, in2, in3, in4);	\
       }									\
     else								\

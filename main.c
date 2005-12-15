@@ -359,7 +359,7 @@ main(int argc, char **argv, char **envp)
   /* AFU? */
   if (sim_afu_fname != NULL)
     {
-      void *sohandle = dlopen (sim_afu_fname, 0);
+      void *sohandle = dlopen (sim_afu_fname, RTLD_NOW);
       _afu1 = dlsym (sohandle, "_afu1");
       _afu2 = dlsym (sohandle, "_afu2");
       _afu3 = dlsym (sohandle, "_afu3");

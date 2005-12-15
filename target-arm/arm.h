@@ -336,6 +336,8 @@ extern md_inst_t MD_NOP_INST;
  * machine.def specific definitions
  */
 
+/* fprintf (stderr, "%s %x %d %d\n", md_op2name[OP], ((INST >> md_opshift[OP]) & md_opmask[OP]), md_opshift[OP], md_opmask[OP]) */
+
 /* inst -> enum md_opcode mapping, use this macro to decode insts */
 #define MD_TOP_OP(INST)		(((INST) >> 24) & 0x0f)
 #define MD_SET_OPCODE(OP, INST)						\

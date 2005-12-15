@@ -4422,7 +4422,11 @@ sys_syscall_1(struct regs_t *regs,	/* registers to access */
 	  break;
 
 	case AngelSWI_Reason_Time:
-	  regs->regs_R[MD_REG_R0] = time (NULL);
+	  // regs->regs_R[MD_REG_R0] = time (NULL);
+{
+static int x = 0;
+	  regs->regs_R[MD_REG_R0] = x++;
+}
 	  break;
 
 	case AngelSWI_Reason_Errno:
@@ -4515,47 +4519,47 @@ sys_syscall_1(struct regs_t *regs,	/* registers to access */
 void
 (*_afu1)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     md_gpr_t *out1, md_gpr_t *out2,
-     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4) = NULL;
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4) = NULL;
 
 /* execute AFU instructions */
 void
 (*_afu2)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     md_gpr_t *out1, md_gpr_t *out2,
-     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4) = NULL;
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4) = NULL;
 
 /* execute AFU instructions */
 void
 (*_afu3)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     md_gpr_t *out1, md_gpr_t *out2,
-     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4) = NULL;
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4) = NULL;
 
 /* execute AFU instructions */
 void
 (*_afu4)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     md_gpr_t *out1, md_gpr_t *out2,
-     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4) = NULL;
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4) = NULL;
 
 /* execute AFU instructions */
 void
 (*_afu5)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     md_gpr_t *out1, md_gpr_t *out2,
-     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4) = NULL;
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4) = NULL;
 
 /* execute AFU instructions */
 void
 (*_afu6)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     md_gpr_t *out1, md_gpr_t *out2,
-     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4) = NULL;
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4) = NULL;
 
 /* execute AFU instructions */
 void
 (*_afu7)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     md_gpr_t *out1, md_gpr_t *out2,
-     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4) = NULL;
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4) = NULL;

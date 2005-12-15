@@ -130,49 +130,49 @@ sys_syscall(struct regs_t *regs,	/* registers to access */
 extern void
 (*_afu1)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     md_gpr_t *out1, md_gpr_t *out2,
-     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4);
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4);
 
 /* execute AFU instructions */
 extern void
 (*_afu2)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     md_gpr_t *out1, md_gpr_t *out2,
-     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4);
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4);
 
 /* execute AFU instructions */
 extern void
 (*_afu3)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     md_gpr_t *out1, md_gpr_t *out2,
-     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4);
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4);
 
 /* execute AFU instructions */
 extern void
 (*_afu4)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     md_gpr_t *out1, md_gpr_t *out2,
-     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4);
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4);
 
 /* execute AFU instructions */
 extern void
 (*_afu5)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     md_gpr_t *out1, md_gpr_t *out2,
-     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4);
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4);
 
 /* execute AFU instructions */
 extern void
 (*_afu6)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     md_gpr_t *out1, md_gpr_t *out2,
-     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4);
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4);
 
 /* execute AFU instructions */
 extern void
 (*_afu7)(mem_access_fn mem_fn,              /* generic memory accessor */
      struct mem_t *mem,                 /* memory space to access */
-     md_gpr_t *out1, md_gpr_t *out2,
-     md_gpr_t in1, md_gpr_t in2, md_gpr_t in3, md_gpr_t in4);
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4);
 
 #endif
