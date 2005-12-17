@@ -555,8 +555,12 @@ myvsprintf(char *obuf, char *format, va_list v)
 	case '9':
 	  {
 	    int num = fcode - '0';
-	    while (isdigit(fcode = *format))
+	    for (;;)
 	      {
+		fcode = *format;
+	        if (fcode < '0' || fcode > '9')
+		  break;
+
 		num = num * 10 + fcode - '0';
 		format++;
 	      }
