@@ -4296,7 +4296,12 @@ sys_syscall_1(struct regs_t *regs,	/* registers to access */
 	    mem_bcopy(mem_fn, mem, Read, angel[0], path, angel[2]);
 	    path[angel[2]] = 0;
 	    if (angel[2] == 3 && !memcmp (path, ":tt", 3))
-	      fd = dup (0);
+	      {
+	        if (angel[1] & 4)
+	          fd = dup (1);
+	        else
+	          fd = dup (0);
+	      }
 	    else
 	      {
 	        if (memchr (path, '\0', angel[2]) != NULL)
