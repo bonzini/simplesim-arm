@@ -100,13 +100,17 @@ enum endian_t
 endian_host_word_order(void)
 {
   int *p;
-  double x = 1.0;
+  union {
+    double d;
+    int i[2];
+  } x;
+
+  x.d = 1.0;
 
   /* NOTE: this check assumes IEEE floating point format */
-  p = (int *)&x;
-  if (*p == 0)
+  if (x.i[0] == 0)
     return endian_little;
-  else if (*p == 0x3ff00000)
+  else if (x.i[0] == 0x3ff00000)
     return endian_big;
   else
     return endian_unknown;
