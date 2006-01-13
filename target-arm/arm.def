@@ -381,16 +381,18 @@ CONNECT(AFU_SWI_LINK)
   {									\
     if (_afu##n)							\
       {									\
-	word_t *out1 = &regs.regs_R[inst & 15];				\
-	word_t *out2 = BIT20 ? &regs.regs_R[(inst >> 4) & 15] : NULL;	\
+	word_t out1 = GPR (inst & 15);					\
+	word_t out2 = BIT20 ? GPR ((inst >> 4) & 15) : 0;		\
 	int inputs = !BIT20 || (IN2 && IN3 && IN4)			\
 		     ? (inst >> 4)					\
 		     : (inst >> 8) | 0xF000;				\
-	word_t in1 = regs.regs_R[inputs & 15];				\
-	word_t in2 = regs.regs_R[(inputs >> 4) & 15];			\
-	word_t in3 = regs.regs_R[(inputs >> 8) & 15];			\
-	word_t in4 = regs.regs_R[(inputs >> 12) & 15];			\
-        _afu##n (mem_access, mem, out1, out2, in1, in2, in3, in4);	\
+	word_t in1 = GPR (inputs & 15);					\
+	word_t in2 = GPR ((inputs >> 4) & 15);				\
+	word_t in3 = GPR ((inputs >> 8) & 15);				\
+	word_t in4 = GPR ((inputs >> 12) & 15);				\
+        _afu##n (mem_access, mem, &out1, &out2, in1, in2, in3, in4);	\
+	SET_GPR (inst & 15, out1);					\
+	if (BIT20) SET_GPR ((inst >> 4) & 15, out2);			\
       }									\
     else								\
       abort ();								\
@@ -402,15 +404,15 @@ DEFINST(AFU##n,			n,					\
 	NA,			F_ICOMP,				\
 									\
 	/* The outputs... */						\
-	(inst & 15),							\
-	BIT20 ? (inst >> 4) & 15 : DNA,					\
+	DGPR(inst & 15),						\
+	BIT20 ? DGPR((inst >> 4) & 15) : DNA,				\
 	DNA,								\
 									\
 	/* The inputs...  */						\
-	!BIT20 || (IN2 && IN3 && IN4) ? (inst >> 4) & 15 : DNA,		\
-	IN2 ? (inst >> 8) & 15 : DNA,					\
-	IN3 ? (inst >> 12) & 15 : DNA,					\
-	IN4 ? (inst >> 16) & 15 : DNA)
+	!BIT20 || (IN2 && IN3 && IN4) ? DGPR((inst >> 4) & 15) : DNA,	\
+	IN2 ? DGPR((inst >> 8) & 15) : DNA,					\
+	IN3 ? DGPR((inst >> 12) & 15) : DNA,					\
+	IN4 ? DGPR((inst >> 16) & 15) : DNA)
 
 #define AFU1_IMPL AFU_IMPL(1)
 #define AFU2_IMPL AFU_IMPL(2)
