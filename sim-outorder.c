@@ -238,6 +238,9 @@ static struct md_uop_t flowtab[MD_MAX_FLOWLEN];
 /* maximum number of inst's to execute */
 static unsigned int max_insts;
 
+/* number of inst's to execute before verbose output starts */
+static unsigned int trigger_inst;
+
 /* number of insts skipped before timing starts */
 static int fastfwd_count;
 
@@ -794,6 +797,10 @@ sim_reg_options(struct opt_odb_t *odb)
   opt_reg_uint(odb, "-max:inst", "maximum number of inst's to execute",
 	       &max_insts, /* default */0,
 	       /* print */TRUE, /* format */NULL);
+
+  opt_reg_uint(odb, "-trigger:inst", "trigger instruction",
+               &trigger_inst, /* default */0,
+               /* print */TRUE, /* format */NULL);
 
   /* trace options */
    /*use the specified pipe instead of a file, or stdio */
@@ -2520,7 +2527,7 @@ ruu_commit(void)
           sim_slip += (sim_cycle - LSQ[LSQ_head].slip);
    
 	  /* print retirement trace if in verbose mode */
-	  if (verbose)
+	  if (verbose && sim_num_insn >= trigger_inst)
 	    {
 	      sim_ret_insn++;
 	      myfprintf(stderr, "%10n @ 0x%08p: ",
@@ -2587,7 +2594,7 @@ ruu_commit(void)
 	  sim_slip += (sim_cycle - RUU[RUU_head].slip);
 
 	  /* print retirement trace if in verbose mode */
-	  if (verbose)
+	  if (verbose && sim_num_insn >= trigger_inst)
 	    {
 	      sim_ret_insn++;
 	      myfprintf(stderr, "(%n) %10n {%d} @ 0x%08p: ",
@@ -3325,7 +3332,8 @@ tracer_recover(void)
   if (!spec_mode)
     panic("cannot recover unless in speculative mode");
 
-  /* fprintf(stderr, "** exiting spec mode...\n"); */
+  if (verbose && sim_num_insn >= trigger_inst)
+    fprintf(stderr, "** exiting spec mode...\n");
 
   /* reset to non-speculative trace generation mode */
   spec_mode = FALSE;
@@ -4401,9 +4409,10 @@ ruu_dispatch(void)
  	}
       
       /* print retirement trace if in verbose mode */
-      if (!spec_mode && verbose)
+      if (verbose && sim_num_insn >= trigger_inst)
 	{
-	  myfprintf(stderr, "++ %10n [xor: 0x%08x] {%d} @ 0x%08p: ",
+	  myfprintf(stderr, "%s %10n [xor: 0x%08x] {%d} @ 0x%08p: ",
+		    spec_mode ? "--" : "++",
 		    sim_num_insn, md_xor_regs(&regs),
 		    inst_seq+1, regs.regs_PC);
 	  if(op == MD_NOP_OP) 
@@ -4465,7 +4474,7 @@ ruu_dispatch(void)
 	  if (!pred_perfect)
 	    {
 	      ruu_fetch_issue_delay = ruu_branch_penalty;
- 	      if (verbose)
+	      if (verbose && sim_num_insn >= trigger_inst)
  		myfprintf(stderr, "MF: ruu_fetch_issue_delay = %d @ (%n)...\n",
  			  ruu_fetch_issue_delay, sim_cycle);
  	    }
@@ -4650,7 +4659,8 @@ ruu_dispatch(void)
 	  if (pred_PC != regs.regs_NPC && !fetch_redirected)
 	    {
 	      /* entering mis-speculation mode, indicate this and save PC */
-	      /*	      fprintf(stderr, "** entering spec mode...\n"); */
+	      if (verbose && sim_num_insn >= trigger_inst)
+	        fprintf(stderr, "** entering spec mode...\n");
 	      spec_mode = TRUE;
 	      in_flow = FALSE;
 	      jmp_flow = FALSE;
@@ -4839,7 +4849,7 @@ ruu_fetch(void)
 	    {
 	      /* I-cache miss, block fetch until it is resolved */
 	      ruu_fetch_issue_delay += lat - 1;
-	      if (verbose)
+	      if (verbose && sim_num_insn >= trigger_inst)
 		myfprintf(stderr, "IF: ruu_fetch_issue_delay = %d @ (%n)...\n",
 			  ruu_fetch_issue_delay, sim_cycle);
               latency_storage=ruu_fetch_issue_delay;
@@ -5202,7 +5212,7 @@ sim_main(void)
 	    regs.regs_NPC = regs.regs_R[MD_REG_PC];
 #endif /* TARGET_ARM */
 
-	  if (verbose /*&& sim_num_insn >= trigger_inst*/)
+	  if (verbose && sim_num_insn >= trigger_inst)
 	    {
 	      myfprintf(stderr, "%10n [xor: 0x%08x] @ 0x%08p: ",
 			sim_num_insn, md_xor_regs(&regs), regs.regs_PC);
@@ -5314,7 +5324,7 @@ sim_main(void)
       else
 	{
 	  ruu_fetch_issue_delay--;
-	  if (verbose)
+	  if (verbose && sim_num_insn >= trigger_inst)
 	    myfprintf(stderr, "** fetch delayed in cycle (%n)...\n", sim_cycle);
 	} 
       
