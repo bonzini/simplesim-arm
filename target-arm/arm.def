@@ -383,13 +383,21 @@ CONNECT(AFU_SWI_LINK)
       {									\
 	word_t out1 = GPR (inst & 15);					\
 	word_t out2 = BIT20 ? GPR ((inst >> 4) & 15) : 0;		\
-	int inputs = !BIT20 || (IN2 && IN3 && IN4)			\
-		     ? (inst >> 4)					\
-		     : (inst >> 8) | 0xF000;				\
-	word_t in1 = GPR (inputs & 15);					\
-	word_t in2 = GPR ((inputs >> 4) & 15);				\
-	word_t in3 = GPR ((inputs >> 8) & 15);				\
-	word_t in4 = GPR ((inputs >> 12) & 15);				\
+	word_t in1, in2, in3, in4;					\
+	if (!BIT20)							\
+	  {								\
+	    in1 = GPR ((inst >> 4) & 15);				\
+	    in2 = GPR ((inst >> 8) & 15);				\
+	    in3 = GPR ((inst >> 12) & 15);				\
+	    in4 = GPR ((inst >> 16) & 15);				\
+	  }								\
+	else								\
+	  {								\
+	    in4 = GPR ((inst >> 4) & 15); /* the second output */	\
+	    in1 = GPR ((inst >> 8) & 15);				\
+	    in2 = GPR ((inst >> 12) & 15);				\
+	    in3 = GPR ((inst >> 16) & 15);				\
+	  }								\
         _afu##n (mem_access, mem, &out1, &out2, in1, in2, in3, in4);	\
 	SET_GPR (inst & 15, out1);					\
 	if (BIT20) SET_GPR ((inst >> 4) & 15, out2);			\
