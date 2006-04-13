@@ -527,9 +527,6 @@ static counter_t sim_invalid_addrs;
  * simulator state variables
  */
 
-static unsigned latency_storage = 0;     /* GPV: remember latency in cycles */
-static unsigned i_longerlat=0, d_longerlat;  /* GPV: which cause of latency caused the longer delay */
- 
 
 /* instruction sequence counter, used to assign unique id's to insts */
 static unsigned int inst_seq = 0;
@@ -2975,7 +2972,7 @@ lsq_refresh(void)
 static void
 ruu_issue(void)
 {
-  int i, load_lat, tlb_lat, n_issued;
+  int i, load_lat, d_longerlat = 0, tlb_lat, n_issued;
   struct RS_link *node, *next_node;
   struct res_template *fu;
 
@@ -3142,8 +3139,7 @@ ruu_issue(void)
 
 			  /* entered execute stage, indicate in pipe trace */
 			  ptrace_newstage(rs->ptrace_seq, PST_EXECUTE, 
-					  rs->ea_comp ? PEV_AGEN : 0, load_lat, 
-                                           d_longerlat);
+					  rs->ea_comp ? PEV_AGEN : 0, 0,  0);
 			}
 
 		      /* one more inst issued */
@@ -4789,6 +4785,7 @@ static void
 ruu_fetch(void)
 {
   int i, lat, tlb_lat, done = FALSE;
+  int i_longerlat = 0, latency_storage = 0;
   md_inst_t inst;
   int stack_recover_idx;
   int branch_cnt;
