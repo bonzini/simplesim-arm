@@ -175,4 +175,7 @@ extern void
      word_t *out1, word_t *out2,
      word_t in1, word_t in2, word_t in3, word_t in4);
 
+/* latency of each AFU */
+extern int _afu_lat[7];
+
 #endif

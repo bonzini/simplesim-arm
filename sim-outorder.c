@@ -3160,7 +3160,7 @@ ruu_issue(void)
 		  rs->issued = TRUE;
 
 		  /* schedule a result event */
-		  eventq_queue_event(rs, sim_cycle + 1);
+		  eventq_queue_event(rs, sim_cycle + MD_OPLAT (rs->op));
 
 		  /* entered execute stage, indicate in pipe trace */
 		  ptrace_newstage(rs->ptrace_seq, PST_EXECUTE,

@@ -244,7 +244,7 @@ enum md_fu_class md_op2fu[OP_MAX] = {
 
 /* enum md_fu_class -> description string */
 char *md_fu2name[NUM_FU_CLASSES] = {
-  NULL, /* NA */
+  "NONE", /* NA */
   "fu-int-ALU",
   "fu-int-multiply",
   "fu-int-divide",
