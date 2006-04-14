@@ -1,5 +1,5 @@
 ## these are set in ../Makefile
-## CC, AR, AROPT, CFLAGS, RANLIB
+## CC, AR, ARFLAGS, CFLAGS, RANLIB
 
 LEX	= flex
 
@@ -31,7 +31,7 @@ exo-test:	exo-test.$(OEXT) options.$(OEXT) stats.$(OEXT) eval.$(OEXT) misc.$(OEX
 
 libexo.$(LEXT):	$(OBJ)
 	$(RM) libexo.$(LEXT)
-	$(AR) $(AROPT)libexo.$(LEXT) $(OBJ)
+	$(AR) $(ARFLAGS) libexo.$(LEXT) $(OBJ)
 	$(RANLIB) libexo.$(LEXT)
 
 .c.$(OEXT):

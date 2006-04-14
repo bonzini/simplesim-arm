@@ -1,5 +1,5 @@
 ## these are set in ../Makefile
-## CC, AR, AROPT, CFLAGS, RANLIB
+## CC, AR, ARFLAGS, CFLAGS, RANLIB
 
 
 #
@@ -18,7 +18,7 @@ OBJ     = libcheetah.$(OEXT) saclru.$(OEXT) util.$(OEXT) sacopt.$(OEXT) \
 
 libcheetah.$(LEXT):	$(OBJ)
 	$(RM) libcheetah.$(LEXT)
-	$(AR) $(AROPT)libcheetah.$(LEXT) $(OBJ)
+	$(AR) $(ARFLAGS) libcheetah.$(LEXT) $(OBJ)
 	$(RANLIB) libcheetah.$(LEXT)
 
 .c.$(OEXT):

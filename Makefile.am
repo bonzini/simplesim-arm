@@ -63,7 +63,7 @@ noinst_HEADERS = \
 	eio.h range.h version.h endian.h misc.h
 
 bin_PROGRAMS = sim-fast sim-safe sim-cache sim-profile sim-bpred \
-	sim-cheetah sim-outorder sim-dis sim-depchk
+	sim-cheetah sim-outorder sim-dis sim-depchk sim-uop
 
 EXTRA_PROGRAMS = sim-armulator sim-eio sysprobe
 
@@ -79,6 +79,7 @@ sim_outorder_LDADD = libsim.a libexo/libexo.a
 sim_armulator_LDADD = libsim.a libexo/libexo.a
 sim_dis_LDADD = libsim.a libexo/libexo.a
 sim_depchk_LDADD = libsim.a libexo/libexo.a
+sim_uop_LDADD = libsim.a libexo/libexo.a
 
 sim_fast_DEPENDENCIES = libsim.a libexo/libexo.a
 sim_safe_DEPENDENCIES = libsim.a libexo/libexo.a
@@ -91,12 +92,17 @@ sim_outorder_DEPENDENCIES = libsim.a libexo/libexo.a
 sim_armulator_DEPENDENCIES = libsim.a libexo/libexo.a
 sim_dis_DEPENDENCIES = libsim.a libexo/libexo.a
 sim_depchk_DEPENDENCIES = libsim.a libexo/libexo.a
+sim_uop_DEPENDENCIES = libsim.a libexo/libexo.a
 
 libexo/libexo.a:
-	cd libexo && $(MAKE) libcheetah.a LEXT=a OEXT=$(OBJECT)
+	cd libexo && $(MAKE) libcheetah.a LEXT=a OEXT=$(OBJEXT) \
+	       AR="$(AR)" RANLIB="$(RANLIB)" ARFLAGS="$(ARFLAGS)" \
+	       CC="$(CC)" CFLAGS="$(CFLAGS)"
 
 libcheetah/libcheetah.a:
-	cd libcheetah && $(MAKE) libcheetah.a LEXT=a OEXT=$(OBJECT)
+	cd libcheetah && $(MAKE) libcheetah.a LEXT=a OEXT=$(OBJEXT) \
+	       AR="$(AR)" RANLIB="$(RANLIB)" ARFLAGS="$(ARFLAGS)" \
+	       CC="$(CC)" CFLAGS="$(CFLAGS)"
 
 sysprobe$(EXEEXT):	sysprobe.c
 	$(CC) $(FFLAGS) -o sysprobe$(EXEEXT) sysprobe.c

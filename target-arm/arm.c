@@ -543,7 +543,7 @@ md_xor_regs(struct regs_t *regs)
   int i;
   qword_t checksum = 0;
 
-  for (i=0; i < (MD_NUM_IREGS-1); i++)
+  for (i=0; i < 15; i++)
     checksum ^= regs->regs_R[i];
 
   //  for (i=0; i < MD_NUM_FREGS; i++)
