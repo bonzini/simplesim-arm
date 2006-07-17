@@ -941,8 +941,9 @@ dl2_access_fn(enum mem_cmd cmd,	md_addr_t baddr, int bsize, struct cache_blk_t *
 	unsigned int mem_lat;
 	/* this is a miss to the lowest level, so access main memory */
 #ifdef VANALYZER_H
-	if(mem_access(mem, cmd, baddr, &blk->data[0], bsize) != md_fault_none) 
-		fatal("memory access fault occurs!\n"); 
+    if ( cmd != Write )
+        if(mem_access(mem, cmd, baddr, &blk->data[0], bsize) != md_fault_none) 
+            fatal("memory access fault occurs!\n"); 
 #endif /* VANALYZER_H */
 	mem_lat = mem_access_latency(bsize);
 
@@ -1074,8 +1075,9 @@ il2_access_fn(enum mem_cmd cmd, md_addr_t baddr, int bsize, struct cache_blk_t *
 
 	/* this is a miss to the lowest level, so access main memory */
 #ifdef VANALYZER_H
-	if(mem_access(mem, cmd, baddr, &blk->data[0], bsize) != md_fault_none) 
-		fatal("memory access fault occurs!\n"); 
+    if ( cmd != Write )
+        if(mem_access(mem, cmd, baddr, &blk->data[0], bsize) != md_fault_none) 
+            fatal("memory access fault occurs!\n"); 
 #endif /* VANALYZER */
 
 	mem_lat = mem_access_latency(bsize);

@@ -79,7 +79,7 @@ typedef struct _fu_arch_pspec_t {
 	fu_cache_pspec_t *il1, *dl1, *il2, *dl2, *itlb, *dtlb;
 	fu_cache_pspec_t *btb;
 	fu_clock_pspec_t *clock;
-	fu_clock_pspec_t *logic;
+	fu_logic_pspec_t *logic;
 	
 #ifdef FP_PANALYZER_H 	
 	fu_alu_pspec_t *alu;

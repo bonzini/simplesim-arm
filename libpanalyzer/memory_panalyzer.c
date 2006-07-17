@@ -127,9 +127,14 @@ sbank_panalyzer(
 	pmwindow = pspec->pmwindow;
 
 	if(buffer)
+    {
+        unsigned sz = ( 4 < pspec -> bsize ) ? 4 : pspec -> bsize ;
+
 		/* counting number of transitions of data bus */
-		// nswitchings = obtain_nswitchings(buffer, pspec->bus, pspec->bsize);
-		nswitchings = obtain_nswitchings(buffer, pspec->bus, 4/*pspec->bsize*/); /* Ludo: I guess they mean something like bussize or so. pspec->bsize is wrong, since for a cache for example this is the blocksize. When accessing an element from the cache, you have to count the switchings for a machineword only. */
+		//nswitchings = obtain_nswitchings(buffer, pspec->bus, pspec->bsize);
+		//nswitchings = obtain_nswitchings(buffer, pspec->bus, 4/*pspec->bsize*/); /* Ludo: I guess they mean something like bussize or so. pspec->bsize is wrong, since for a cache for example this is the blocksize. When accessing an element from the cache, you have to count the switchings for a machineword only. */
+		nswitchings = obtain_nswitchings(buffer, pspec->bus, sz);
+    }
 	else
 		/* from fixed activity factor: see technology.h  */
 		nswitchings = (unsigned)(afactor * (double)(pspec->bsize * 8));
