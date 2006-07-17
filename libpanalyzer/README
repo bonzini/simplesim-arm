@@ -1,0 +1,4 @@
+. mem:pipelined support! current version only support
+. show the errors of the previous approaches.
+	e.g., the count every access of cache in fetch unit. But the icache is accessed only once though we access several data blocks in one cache line.
+

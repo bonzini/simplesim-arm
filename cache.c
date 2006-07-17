@@ -49,9 +49,21 @@
  * INTERNET: dburger@cs.wisc.edu
  * US Mail:  1210 W. Dayton Street, Madison, WI 53706
  *
- * $Id: cache.c,v 1.1.1.1 2000/11/29 14:53:54 cu-cs Exp $
+ * $Id: cache.c,v 1.2 2003/12/18 20:31:59 panalyzer Exp $
  *
  * $Log: cache.c,v $
+ * Revision 1.2  2003/12/18 20:31:59  panalyzer
+ * *** empty log message ***
+ *
+ * Revision 1.1.1.1  2003/09/18 00:57:54  panalyzer
+ *
+ *
+ * Revision 1.1.1.1  2003/09/18 00:18:43  panalyzer
+ *
+ *
+ * Revision 1.1.1.1  2003/09/16 18:48:14  gdm
+ *
+ *
  * Revision 1.1.1.1  2000/11/29 14:53:54  cu-cs
  * Grand unification of arm sources.
  *
@@ -105,11 +117,25 @@
 #include "machine.h"
 #include "cache.h"
 
+// by Taeho Kgil  
+unsigned int icache_miss_flag; 
+unsigned int dcache_miss_flag; 
+struct cache_t * cache_il1_ID; 
+struct cache_t * cache_dl1_ID; 
+
+unsigned int prev_dset = 0xFFFFFFFF; 
+unsigned int prev_iset = 0xFFFFFFFF; 
+unsigned int prev_dtag = 0xFFFFFFFF; 
+unsigned int prev_itag = 0xFFFFFFFF; 
+
+counter_t prefetch_hit;
+// ends here 
+
 /* cache access macros */
-#define CACHE_TAG(cp, addr)	((addr) >> (cp)->tag_shift)
-#define CACHE_SET(cp, addr)	(((addr) >> (cp)->set_shift) & (cp)->set_mask)
-#define CACHE_BLK(cp, addr)	((addr) & (cp)->blk_mask)
-#define CACHE_TAGSET(cp, addr)	((addr) & (cp)->tagset_mask)
+#define CACHE_TAG(cp, addr)    ((addr) >> (cp)->tag_shift)
+#define CACHE_SET(cp, addr)    (((addr) >> (cp)->set_shift) & (cp)->set_mask)
+#define CACHE_BLK(cp, addr)    ((addr) & (cp)->blk_mask)
+#define CACHE_TAGSET(cp, addr) ((addr) & (cp)->tagset_mask)
 
 /* extract/reconstruct a block address */
 #define CACHE_BADDR(cp, addr)	((addr) & ~(cp)->blk_mask)
@@ -362,7 +388,8 @@ cache_create(char *name,		/* name of the cache */
   cp->blk_access_fn = blk_access_fn;
 
   /* compute derived parameters */
-  cp->hsize = CACHE_HIGHLY_ASSOC(cp) ? (assoc >> 2) : 0;
+  // cp->hsize = CACHE_HIGHLY_ASSOC(cp) ? (assoc >> 2) : 0;
+  cp->hsize = 0;
   cp->blk_mask = bsize-1;
   cp->set_shift = log_base2(bsize);
   cp->set_mask = nsets-1;
@@ -563,7 +590,7 @@ cache_access(struct cache_t *cp,	/* cache to access */
   /* default replacement address */
   if (repl_addr)
     *repl_addr = 0;
-
+	
   /* check alignments */
 #ifdef FIXME
   if ((nbytes & (nbytes-1)) != 0 || (addr & (nbytes-1)) != 0)
@@ -622,6 +649,25 @@ cache_access(struct cache_t *cp,	/* cache to access */
   /* **MISS** */
   cp->misses++;
 
+  // added by Taeho Kgil 
+  // cache access occurs 
+  if((cp == cache_il1_ID)){
+  	icache_miss_flag = 1;
+	if((prev_iset + 1) == set) {
+		prefetch_hit++;
+	}
+	prev_iset = set; 
+  }
+  if((cp == cache_dl1_ID)) {
+  	dcache_miss_flag = 1;
+	if((prev_dset + 1) == set) {
+		prefetch_hit++;
+	}
+	prev_dset = set; 
+  }
+	// ends here
+
+	 	
   /* select the appropriate block to replace, and re-link this entry to
      the appropriate place in the way list */
   switch (cp->policy) {

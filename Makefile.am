@@ -63,7 +63,7 @@ noinst_HEADERS = \
 	eio.h range.h version.h endian.h misc.h
 
 bin_PROGRAMS = sim-fast sim-safe sim-cache sim-profile sim-bpred \
-	sim-cheetah sim-outorder sim-dis sim-depchk sim-uop
+	sim-cheetah sim-outorder sim-dis sim-depchk sim-uop sim-panalyzer
 
 EXTRA_PROGRAMS = sim-armulator sim-eio sysprobe
 
@@ -80,6 +80,7 @@ sim_armulator_LDADD = libsim.a libexo/libexo.a
 sim_dis_LDADD = libsim.a libexo/libexo.a
 sim_depchk_LDADD = libsim.a libexo/libexo.a
 sim_uop_LDADD = libsim.a libexo/libexo.a
+sim_panalyzer_LDADD = libsim.a libexo/libexo.a libpanalyzer/libpanalyzer.a
 
 sim_fast_DEPENDENCIES = libsim.a libexo/libexo.a
 sim_safe_DEPENDENCIES = libsim.a libexo/libexo.a
@@ -93,6 +94,14 @@ sim_armulator_DEPENDENCIES = libsim.a libexo/libexo.a
 sim_dis_DEPENDENCIES = libsim.a libexo/libexo.a
 sim_depchk_DEPENDENCIES = libsim.a libexo/libexo.a
 sim_uop_DEPENDENCIES = libsim.a libexo/libexo.a
+sim_panalyzer_DEPENDENCIES = libsim.a libexo/libexo.a libpanalyzer/libpanalyzer.a
+
+sim_panalyzer_CFLAGS = -DPANALYZER_H -DLV2_PANALYZER_H
+# -DLV2_PANALYZER_H
+# -DLV1_PANALYZER_H
+# -DLV1_CLOCK_PANALYZER_H
+# -DLV1_IO_PANALYZER_H
+# -DPA_TRACE_WINDOW_H
 
 libexo/libexo.a:
 	cd libexo && $(MAKE) libcheetah.a LEXT=a OEXT=$(OBJEXT) \
@@ -101,6 +110,16 @@ libexo/libexo.a:
 
 libcheetah/libcheetah.a:
 	cd libcheetah && $(MAKE) libcheetah.a LEXT=a OEXT=$(OBJEXT) \
+	       AR="$(AR)" RANLIB="$(RANLIB)" ARFLAGS="$(ARFLAGS)" \
+	       CC="$(CC)" CFLAGS="$(CFLAGS)"
+
+libpa_lv1/libpa_lv1.a:
+	cd libpa_lv1 && $(MAKE) libpa_lv1.a LEXT=a OEXT=$(OBJEXT) \
+	       AR="$(AR)" RANLIB="$(RANLIB)" ARFLAGS="$(ARFLAGS)" \
+	       CC="$(CC)" CFLAGS="$(CFLAGS)"
+
+libpanalyzer/libpanalyzer.a:
+	cd libpanalyzer && $(MAKE) libpanalyzer.a LEXT=a OEXT=$(OBJEXT) \
 	       AR="$(AR)" RANLIB="$(RANLIB)" ARFLAGS="$(ARFLAGS)" \
 	       CC="$(CC)" CFLAGS="$(CFLAGS)"
 

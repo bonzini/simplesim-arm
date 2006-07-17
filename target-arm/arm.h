@@ -377,7 +377,7 @@ extern char *md_op2format[];
 
 /* enum md_opcode -> latency for operations in FUClamd_NA class.  */
 #define MD_OPLAT(OP)		((OP) >= AFU1  && (OP) <= AFU7 && _afu_lat \
-				 ? _afu_lat[(OP) - AFU1] : 1)
+				 ? _afu_lat[(OP) - AFU1] : -1)
 
 /* function unit classes, update md_fu2name if you update this definition */
 enum md_fu_class {

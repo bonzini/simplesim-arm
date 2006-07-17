@@ -1,0 +1,8 @@
+Level 1 abstraction of Power model
+Created by Taeho Kgil.
+tkgil@eecs.umich.edu
+
+Level 1 Power Analysis relies on access counts for each component
+The PA keeps track of access to simplescalar components
+
+  

@@ -4568,3 +4568,5 @@ void
      struct mem_t *mem,                 /* memory space to access */
      word_t *out1, word_t *out2,
      word_t in1, word_t in2, word_t in3, word_t in4) = NULL;
+
+int *_afu_lat = NULL;

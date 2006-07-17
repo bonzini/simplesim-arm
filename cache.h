@@ -328,4 +328,18 @@ cache_flush_addr(struct cache_t *cp,	/* cache instance to flush */
 		 md_addr_t addr,	/* address of block to flush */
 		 tick_t now);		/* time of cache flush */
 
+/* by Taeho Kgil */
+extern unsigned int icache_miss_flag; 
+extern unsigned int dcache_miss_flag; 
+extern struct cache_t * cache_il1_ID; 
+extern struct cache_t * cache_dl1_ID; 
+
+extern unsigned int prev_dset; 
+extern unsigned int prev_iset; 
+extern unsigned int prev_dtag; 
+extern unsigned int prev_itag; 
+
+extern counter_t prefetch_hit;
+// ends here
+
 #endif /* CACHE_H */

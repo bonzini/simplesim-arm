@@ -317,7 +317,9 @@ FILE *gzopen(char *fname, char *type);
 /* close compressed stream */
 void gzclose(FILE *fd);
 
+#if 0
 /* update the CRC on the data block one byte at a time */
 word_t crc(word_t crc_accum, word_t data);
+#endif
 
 #endif /* MISC_H */

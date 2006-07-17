@@ -3135,7 +3135,14 @@ ruu_issue(void)
 		      else /* !load && !store */
 			{
 			  /* use deterministic functional unit latency */
-			  eventq_queue_event(rs, sim_cycle + fu->oplat);
+			  switch (MD_OPLAT (rs->op))
+			    {
+			    case -1:
+			      eventq_queue_event(rs, sim_cycle + fu->oplat);
+			      break;
+			    default:
+			      eventq_queue_event(rs, sim_cycle + MD_OPLAT (rs->op));
+			    }
 
 			  /* entered execute stage, indicate in pipe trace */
 			  ptrace_newstage(rs->ptrace_seq, PST_EXECUTE, 
