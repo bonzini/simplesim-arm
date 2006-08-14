@@ -104,7 +104,7 @@ sim_panalyzer_CFLAGS = -DPANALYZER_H -DLV2_PANALYZER_H
 # -DPA_TRACE_WINDOW_H
 
 libexo/libexo.a:
-	cd libexo && $(MAKE) libcheetah.a LEXT=a OEXT=$(OBJEXT) \
+	cd libexo && $(MAKE) libexo.a LEXT=a OEXT=$(OBJEXT) \
 	       AR="$(AR)" RANLIB="$(RANLIB)" ARFLAGS="$(ARFLAGS)" \
 	       CC="$(CC)" CFLAGS="$(CFLAGS)"
 

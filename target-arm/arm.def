@@ -371,36 +371,25 @@ DEFLINK(AFU_SWI_LINK, 0x0f, "afu_swi_link", 21, 0x07)
 
 CONNECT(AFU_SWI_LINK)
 
-#define BIT20	(inst & 0x100000)
-#define IN1	((inst & 0xF0) != 0xF0)
-#define IN2	((inst & 0xF00) != 0xF00)
-#define IN3	((inst & 0xF000) != 0xF000)
-#define IN4	((inst & 0xF0000) != 0xF0000)
+#define IN1	(((inst >> 4) & 15) != 15)
+#define IN2	(((inst >> 8) & 7) != 7)
+#define IN3	(((inst >> 11) & 7) != 7)
+#define IN4	(((inst >> 14) & 7) != 7)
+#define OUT2	(((inst >> 17) & 15) != 15)
 
 #define AFU_IMPL(n)							\
   {									\
     if (_afu##n)							\
       {									\
 	word_t out1 = GPR (inst & 15);					\
-	word_t out2 = BIT20 ? GPR ((inst >> 4) & 15) : 0;		\
-	word_t in1, in2, in3, in4;					\
-	if (!BIT20)							\
-	  {								\
-	    in1 = GPR ((inst >> 4) & 15);				\
-	    in2 = GPR ((inst >> 8) & 15);				\
-	    in3 = GPR ((inst >> 12) & 15);				\
-	    in4 = GPR ((inst >> 16) & 15);				\
-	  }								\
-	else								\
-	  {								\
-	    in4 = GPR ((inst >> 4) & 15); /* the second output */	\
-	    in1 = GPR ((inst >> 8) & 15);				\
-	    in2 = GPR ((inst >> 12) & 15);				\
-	    in3 = GPR ((inst >> 16) & 15);				\
-	  }								\
-        _afu##n (mem_access, mem, &out1, &out2, in1, in2, in3, in4);	\
+	word_t out2 = OUT2 ? GPR ((inst >> 17) & 15) : 0;		\
+	word_t in1 = GPR ((inst >> 4) & 15);				\
+	word_t in2 = GPR ((inst >> 8) & 7);				\
+	word_t in3 = GPR ((inst >> 11) & 7);				\
+	word_t in4 = GPR ((inst >> 14) & 7);				\
+	_afu##n (mem_access, mem, &out1, &out2, in1, in2, in3, in4);	\
 	SET_GPR (inst & 15, out1);					\
-	if (BIT20) SET_GPR ((inst >> 4) & 15, out2);			\
+	if (OUT2) SET_GPR ((inst >> 17) & 15, out2);			\
       }									\
     else								\
       abort ();								\
@@ -413,14 +402,14 @@ DEFINST(AFU##n,			n,					\
 									\
 	/* The outputs... */						\
 	DGPR(inst & 15),						\
-	BIT20 ? DGPR((inst >> 4) & 15) : DNA,				\
+	OUT2 ? DGPR((inst >> 17) & 15) : DNA,				\
 	DNA,								\
 									\
 	/* The inputs...  */						\
-	!BIT20 || (IN2 && IN3 && IN4) ? DGPR((inst >> 4) & 15) : DNA,	\
-	IN2 ? DGPR((inst >> 8) & 15) : DNA,					\
-	IN3 ? DGPR((inst >> 12) & 15) : DNA,					\
-	IN4 ? DGPR((inst >> 16) & 15) : DNA)
+	IN1 ? DGPR((inst >> 4) & 15) : DNA,				\
+	IN2 ? DGPR((inst >> 8) & 7) : DNA,				\
+	IN3 ? DGPR((inst >> 11) & 7) : DNA,				\
+	IN4 ? DGPR((inst >> 14) & 7) : DNA)
 
 #define AFU1_IMPL AFU_IMPL(1)
 #define AFU2_IMPL AFU_IMPL(2)
