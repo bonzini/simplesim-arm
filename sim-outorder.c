@@ -1662,6 +1662,9 @@ sim_reg_stats(struct stat_sdb_t *sdb)   /* stats database */
   }
   ld_reg_stats(sdb);
   mem_reg_stats(mem, sdb);
+
+  /* microarchitecture stats */
+  md_reg_stats(sdb);
 }
 
 /* forward declarations */

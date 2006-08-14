@@ -379,6 +379,7 @@ CONNECT(AFU_SWI_LINK)
 
 #define AFU_IMPL(n)							\
   {									\
+    afu_count++;							\
     if (_afu##n)							\
       {									\
 	word_t out1 = GPR (inst & 15);					\

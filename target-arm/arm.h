@@ -870,4 +870,13 @@ md_print_uop(enum md_opcode op,
 	     md_addr_t pc,		/* addr of inst, used for PC-rels */
 	     FILE *stream);		/* output stream */
 
+/* stats variables, incremented by .def file.  */
+extern counter_t afu_count;
+
+/* register md stats */
+struct stat_sdb_t;
+
+void
+md_reg_stats(struct stat_sdb_t *sdb);/* stats database */
+
 #endif /* ARM_H */

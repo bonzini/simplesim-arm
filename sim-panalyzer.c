@@ -3230,6 +3230,9 @@ sim_reg_stats(struct stat_sdb_t *sdb)   /* stats database */
 	ld_reg_stats(sdb);
 	mem_reg_stats(mem, sdb);
 
+  /* microarchitecture stats */
+  md_reg_stats(sdb);
+
 #ifdef PANALYZER_H
 #ifdef LV1_PANALYZER_H
   lv1_panalyzer_reg_stats(sdb);

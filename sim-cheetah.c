@@ -310,6 +310,9 @@ sim_reg_stats(struct stat_sdb_t *sdb)
   stat_reg_formula(sdb, "sim_inst_rate",
 		   "simulation speed (in insts/sec)",
 		   "sim_num_insn / sim_elapsed_time", NULL);
+
+  /* microarchitecture stats */
+  md_reg_stats(sdb);
 }
 
 /* initialize the simulator */

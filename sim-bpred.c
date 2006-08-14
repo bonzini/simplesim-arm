@@ -322,6 +322,9 @@ sim_reg_stats(struct stat_sdb_t *sdb)
   /* register predictor stats */
   if (pred)
     bpred_reg_stats(pred, sdb);
+
+  /* microarchitecture stats */
+  md_reg_stats(sdb);
 }
 
 /* initialize the simulator */

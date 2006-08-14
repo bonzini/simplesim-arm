@@ -171,6 +171,7 @@
 #include "machine.h"
 #include "eval.h"
 #include "regs.h"
+#include "stats.h"
 
 #if 0 /* cross-endian execution now works with EIO trace files only... */
 /* FIXME: currently SimpleScalar/AXP only builds on little-endian... */
@@ -2938,3 +2939,14 @@ md_print_uop(enum md_opcode op,
       md_print_ifmt(MD_OP_FORMAT(op), inst, pc, stream);
     }
 }
+
+counter_t afu_count = 0;
+
+void
+md_reg_stats(struct stat_sdb_t *sdb)
+{
+  stat_reg_counter(sdb, "afu_count",
+                   "total number of AFU instructions executed",
+                   &afu_count, /* initial value */ 0, /* format */ NULL);
+}
+

@@ -233,6 +233,9 @@ sim_reg_stats(struct stat_sdb_t *sdb)
 		   "sim_num_insn / sim_elapsed_time", NULL);
   ld_reg_stats(sdb);
   mem_reg_stats(mem, sdb);
+
+  /* microarchitecture stats */
+  md_reg_stats(sdb);
 }
 
 /* initialize the simulator */
