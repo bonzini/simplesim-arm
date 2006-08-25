@@ -47,13 +47,20 @@ FFLAGS = -DDEBUG
 #
 # all the sources
 #
-noinst_LIBRARIES = libsim.a
+noinst_LIBRARIES = libsim.a libsim-power.a
 libsim_a_SOURCES = \
 	main.c \
 	memory.c regs.c cache.c bpred.c ptrace.c \
-	resource.c endian.c dlite.c symbol.c eval.c options.c range.c \
+	resource.c endian.c dlite.c eval.c options.c range.c \
 	eio.c stats.c endian.c misc.c \
-	machine.c loader.c syscall.c
+	loader.c symbol.c machine.c syscall.c
+
+libsim_power_a_SOURCES = \
+	main.c \
+	memory.c regs.c cache.c bpred.c ptrace.c \
+	resource.c endian.c dlite.c eval.c options.c range.c \
+	eio.c stats.c endian.c misc.c \
+	loader.c symbol.c machine.c syscall.c
 
 dist_noinst_DATA = eventq.c eventq.h
 
@@ -80,7 +87,7 @@ sim_armulator_LDADD = libsim.a libexo/libexo.a
 sim_dis_LDADD = libsim.a libexo/libexo.a
 sim_depchk_LDADD = libsim.a libexo/libexo.a
 sim_uop_LDADD = libsim.a libexo/libexo.a
-sim_panalyzer_LDADD = libsim.a libexo/libexo.a libpanalyzer/libpanalyzer.a
+sim_panalyzer_LDADD = libsim-power.a libexo/libexo.a libpanalyzer/libpanalyzer.a
 
 sim_fast_DEPENDENCIES = libsim.a libexo/libexo.a
 sim_safe_DEPENDENCIES = libsim.a libexo/libexo.a
@@ -94,9 +101,10 @@ sim_armulator_DEPENDENCIES = libsim.a libexo/libexo.a
 sim_dis_DEPENDENCIES = libsim.a libexo/libexo.a
 sim_depchk_DEPENDENCIES = libsim.a libexo/libexo.a
 sim_uop_DEPENDENCIES = libsim.a libexo/libexo.a
-sim_panalyzer_DEPENDENCIES = libsim.a libexo/libexo.a libpanalyzer/libpanalyzer.a
+sim_panalyzer_DEPENDENCIES = libsim-power.a libexo/libexo.a libpanalyzer/libpanalyzer.a
 
-sim_panalyzer_CFLAGS = -DPANALYZER_H -DLV2_PANALYZER_H
+sim_panalyzer_CFLAGS = -DVANALYZER_H -DPANALYZER_H -DLV2_PANALYZER_H
+libsim_power_a_CFLAGS = -DVANALYZER_H -DPANALYZER_H -DLV2_PANALYZER_H
 # -DLV2_PANALYZER_H
 # -DLV1_PANALYZER_H
 # -DLV1_CLOCK_PANALYZER_H

@@ -187,9 +187,9 @@ create_cache_panalyzer(
 		pspec->t_Ceffs->lCeff = iCeff * (double)ntbits;
 
 		ntbits = nsets * assoc * (bsize * 8);
-		pspec->t_Ceffs->sCeff = sCeff; 
-		pspec->t_Ceffs->iCeff = iCeff * (double)ntbits;
-		pspec->t_Ceffs->lCeff = iCeff * (double)ntbits;
+		pspec->d_Ceffs->sCeff = sCeff; 
+		pspec->d_Ceffs->iCeff = iCeff * (double)ntbits;
+		pspec->d_Ceffs->lCeff = iCeff * (double)ntbits;
 	}
 	fprintf(stderr,   "**********************************************\n");
 	fprintf(stderr, "total memory area: %3.4e (um^2)\n", pspec->dimension->area);

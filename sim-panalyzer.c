@@ -1778,7 +1778,7 @@ opt_reg_double(odb,
 "-panalyzer:fpu", "floating point unit effective Capacitance pF for power model", &fpu_Ceff, /* default */1.0, /* print */TRUE, /* format */NULL);
 
 #endif
-	
+
 #endif	
 
 }
@@ -3025,6 +3025,10 @@ sim_check_options(struct opt_odb_t *odb,        /* options database */
 	xCeff, yCeff, 
 	iCeff, lCeff);
 //	fprintf(stderr,"logic_pspec =  %x\n",logic_pspec); 
+
+
+	afu_panalyzer_set_params (opfreq);
+
 //  }
 #endif
 

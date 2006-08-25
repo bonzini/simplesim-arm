@@ -368,6 +368,8 @@ main(int argc, char **argv, char **envp)
       _afu6 = dlsym (sohandle, "_afu6");
       _afu7 = dlsym (sohandle, "_afu7");
       _afu_lat = dlsym (sohandle, "_afu_lat");
+      _afu_clk_freq = dlsym (sohandle, "_afu_clk_freq");
+      _afu_vdd = dlsym (sohandle, "_afu_vdd");
     }
 #endif
 

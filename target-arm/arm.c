@@ -173,6 +173,10 @@
 #include "regs.h"
 #include "stats.h"
 
+#ifdef LV2_PANALYZER_H
+#include "./libpanalyzer/technology.h"
+#endif
+
 #if 0 /* cross-endian execution now works with EIO trace files only... */
 /* FIXME: currently SimpleScalar/AXP only builds on little-endian... */
 #if !defined(BYTES_LITTLE_ENDIAN) || !defined(WORDS_LITTLE_ENDIAN)
@@ -2940,7 +2944,80 @@ md_print_uop(enum md_opcode op,
     }
 }
 
+
 counter_t afu_count = 0;
+double afu_max_power = 0, afu_total_power = 0;
+double *_afu_vdd, *_afu_clk_freq;
+
+/* execute AFU instructions */
+double
+(*_afu1)(mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4) = NULL;
+
+/* execute AFU instructions */
+double
+(*_afu2)(mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4) = NULL;
+
+/* execute AFU instructions */
+double
+(*_afu3)(mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4) = NULL;
+
+/* execute AFU instructions */
+double
+(*_afu4)(mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4) = NULL;
+
+/* execute AFU instructions */
+double
+(*_afu5)(mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4) = NULL;
+
+/* execute AFU instructions */
+double
+(*_afu6)(mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4) = NULL;
+
+/* execute AFU instructions */
+double
+(*_afu7)(mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4) = NULL;
+
+int *_afu_lat = NULL;
+
+void
+afu_panalyzer_set_params (double freq)
+{
+#ifdef LV2_PANALYZER_H
+  if (_afu_clk_freq)
+    *_afu_clk_freq = freq * 1e6;
+  if (_afu_vdd)
+    *_afu_vdd = Vdd;
+#endif
+}
+
+void
+afu_panalyzer (double watt_power)
+{
+  if (watt_power > afu_max_power)
+    afu_max_power = watt_power;
+  afu_total_power += watt_power;
+}
 
 void
 md_reg_stats(struct stat_sdb_t *sdb)
@@ -2948,5 +3025,16 @@ md_reg_stats(struct stat_sdb_t *sdb)
   stat_reg_counter(sdb, "afu_count",
                    "total number of AFU instructions executed",
                    &afu_count, /* initial value */ 0, /* format */ NULL);
+#ifdef LV2_PANALYZER_H
+  stat_reg_double(sdb, "afu_peak",
+                   "afu peak power dissipation",
+                   &afu_max_power, /* initial value */ 0, /* format */ NULL);
+  stat_reg_double(sdb, "afu_pdissipation",
+                   "afu total power dissipation",
+                   &afu_total_power, /* initial value */ 0, /* format */ NULL);
+  stat_reg_formula(sdb, "afu_avgpdissipation",
+                   "afu average power dissipation",
+                   "afu_pdissipation / sim_cycle", /* format */ NULL);
+#endif
 }
 

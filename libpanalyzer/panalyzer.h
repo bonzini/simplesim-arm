@@ -52,7 +52,7 @@
 #define INIT_PANALYZER_H
 
 #include "../host.h"
-#include "../memory.h"
+#include "../machine.h"
 
 /* power monitoring windows */
 #define MaxPMWindows 512

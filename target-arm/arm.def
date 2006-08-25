@@ -388,7 +388,9 @@ CONNECT(AFU_SWI_LINK)
 	word_t in2 = GPR ((inst >> 8) & 7);				\
 	word_t in3 = GPR ((inst >> 11) & 7);				\
 	word_t in4 = GPR ((inst >> 14) & 7);				\
-	_afu##n (mem_access, mem, &out1, &out2, in1, in2, in3, in4);	\
+	double power =                                                  \
+          _afu##n (mem_access, mem, &out1, &out2, in1, in2, in3, in4);	\
+        afu_panalyzer (power);                                          \
 	SET_GPR (inst & 15, out1);					\
 	if (OUT2) SET_GPR ((inst >> 17) & 15, out2);			\
       }									\

@@ -193,6 +193,8 @@
 /* address type definition */
 typedef word_t md_addr_t;
 
+#include "memory.h"
+#include "stats.h"
 
 /*
  * target-dependent memory module configuration
@@ -873,9 +875,66 @@ md_print_uop(enum md_opcode op,
 /* stats variables, incremented by .def file.  */
 extern counter_t afu_count;
 
-/* register md stats */
-struct stat_sdb_t;
 
+extern double
+(*_afu1)(mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4);
+
+/* execute AFU instructions */
+extern double
+(*_afu2)(mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4);
+
+/* execute AFU instructions */
+extern double
+(*_afu3)(mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4);
+
+/* execute AFU instructions */
+extern double
+(*_afu4)(mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4);
+
+/* execute AFU instructions */
+extern double
+(*_afu5)(mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4);
+
+/* execute AFU instructions */
+extern double
+(*_afu6)(mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4);
+
+/* execute AFU instructions */
+extern double
+(*_afu7)(mem_access_fn mem_fn,              /* generic memory accessor */
+     struct mem_t *mem,                 /* memory space to access */
+     word_t *out1, word_t *out2,
+     word_t in1, word_t in2, word_t in3, word_t in4);
+
+/* latency of each AFU */
+extern int *_afu_lat;
+
+/* for power analysis: drain voltage and clock frequency.  */
+extern double *_afu_vdd, *_afu_clk_freq;
+
+extern void afu_panalyzer_set_params (double freq);
+extern void afu_panalyzer (double energy);
+
+
+/* register md stats */
 void
 md_reg_stats(struct stat_sdb_t *sdb);/* stats database */
 

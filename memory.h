@@ -102,7 +102,6 @@
 
 #include "host.h"
 #include "misc.h"
-#include "machine.h"
 #include "options.h"
 #include "stats.h"
 
