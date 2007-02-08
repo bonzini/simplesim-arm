@@ -40,7 +40,6 @@
  *------------------------------------------------------------*/
 
 #include "stats.h"
-#include "memory.h"
 
 /*  The following are things you might want to change
  *  when compiling
@@ -104,7 +103,9 @@
  * To convert from 0.8um to 0.5um, make FUDGEFACTOR = 1.6
  */
  
-#define FUDGEFACTOR 1.0
+#define FUDGEFACTOR (0.18 / 0.8)
+
+#define TECH_POINT18
 
 /*===================================================================*/
 
@@ -115,7 +116,6 @@
 
 #define GEN_POWER_FACTOR 1.31
 
-#define TECH_POINT35
 #if defined(TECH_POINT10)
 #define CSCALE		(84.2172)	/* wire capacitance scaling factor */
 			/* linear: 51.7172, predicted: 84.2172 */
@@ -489,25 +489,16 @@ typedef struct {
   double icache_tagarray;
 
   double icache;
-  
-  double icache2_decoder;
-  double icache2_wordline;
-  double icache2_bitline;
-  double icache2_senseamp;
-  double icache2_tagarray;
-
-  double icache2;
-
 
   double dcache_decoder;
   double dcache_wordline;
   double dcache_bitline;
   double dcache_senseamp;
   double dcache_tagarray;
-  
+
   double dtlb;
   double itlb;
-  
+
   double dcache2_decoder;
   double dcache2_wordline;
   double dcache2_bitline;
@@ -535,88 +526,10 @@ typedef struct {
   double regfile_power_nobit;
   double result_power;
   double icache_power;
-  double icache2_power;
   double dcache_power;
   double dcache2_power;
 
   double clock_power;
-
-  double hd_bpred_power;
-  
-  double hd_btb;
-  double hd_btb_tagarray;
-  double hd_btb_decoder_1ststg;
-  double hd_btb_decoder_2ndstg;
-  double hd_btb_wordline;
-  double hd_btb_bitline_rd;
-  double hd_btb_bitline_wr;
-  double hd_btb_senseamp;
-  double hd_btb_tag_decoder_1ststg;
-  double hd_btb_tag_decoder_2ndstg;
-  double hd_btb_tag_wordline;
-  double hd_btb_tag_bitline_rd;
-  double hd_btb_tag_bitline_wr;
-  double hd_btb_tag_senseamp;
-  
-  double hd_icache_power;
-  double hd_icache_tagarray;
-  double hd_icache_decoder_1ststg;
-  double hd_icache_decoder_2ndstg;
-  double hd_icache_wordline;
-  double hd_icache_bitline_rd;
-  double hd_icache_bitline_wr;
-  double hd_icache_senseamp;
-  double hd_icache_tag_decoder_1ststg;
-  double hd_icache_tag_decoder_2ndstg;
-  double hd_icache_tag_wordline;
-  double hd_icache_tag_bitline_rd;
-  double hd_icache_tag_bitline_wr;
-  double hd_icache_tag_senseamp;
-
-  double hd_icache2_power;
-  double hd_icache2_tagarray;
-  double hd_icache2_decoder_1ststg;
-  double hd_icache2_decoder_2ndstg;
-  double hd_icache2_wordline;
-  double hd_icache2_bitline_rd;
-  double hd_icache2_bitline_wr;
-  double hd_icache2_senseamp;
-  double hd_icache2_tag_decoder_1ststg;
-  double hd_icache2_tag_decoder_2ndstg;
-  double hd_icache2_tag_wordline;
-  double hd_icache2_tag_bitline_rd;
-  double hd_icache2_tag_bitline_wr;
-  double hd_icache2_tag_senseamp;
-
-  double hd_dcache_power;
-  double hd_dcache_tagarray;
-  double hd_dcache_decoder_1ststg;
-  double hd_dcache_decoder_2ndstg;
-  double hd_dcache_wordline;
-  double hd_dcache_bitline_rd;
-  double hd_dcache_bitline_wr;
-  double hd_dcache_senseamp;
-  double hd_dcache_tag_decoder_1ststg;
-  double hd_dcache_tag_decoder_2ndstg;
-  double hd_dcache_tag_wordline;
-  double hd_dcache_tag_bitline_rd;
-  double hd_dcache_tag_bitline_wr;
-  double hd_dcache_tag_senseamp;
-
-  double hd_dcache2_power;
-  double hd_dcache2_tagarray;
-  double hd_dcache2_decoder_1ststg;
-  double hd_dcache2_decoder_2ndstg;
-  double hd_dcache2_wordline;
-  double hd_dcache2_bitline_rd;
-  double hd_dcache2_bitline_wr;
-  double hd_dcache2_senseamp;
-  double hd_dcache2_tag_decoder_1ststg;
-  double hd_dcache2_tag_decoder_2ndstg;
-  double hd_dcache2_tag_wordline;
-  double hd_dcache2_tag_bitline_rd;
-  double hd_dcache2_tag_bitline_wr;
-  double hd_dcache2_tag_senseamp;
 
 } power_result_type;
 
@@ -640,8 +553,8 @@ typedef struct {
    double dec_tag_driver,dec_tag_3to8,dec_tag_inv;
    double wordline_delay_data,wordline_delay_tag;
    double bitline_delay_data,bitline_delay_tag;
-   double sense_amp_delay_data,sense_amp_delay_tag;
-   double senseext_driver_delay_data;
+  double sense_amp_delay_data,sense_amp_delay_tag;
+  double senseext_driver_delay_data;
    double compare_part_delay;
    double drive_mux_delay;
    double selb_delay;
@@ -657,10 +570,6 @@ double gatecap(double width,double wirelength);
 double gatecappass(double width,double wirelength);
 double draincap(double width,int nchannel,int stack);
 double restowidth(double res,int nchannel);
-double array_decoder_power_1ststg(int rows,int cols,double predeclength,int rports,int wports,int cache);
-double array_decoder_power_2ndstg(int rows,int cols,double predeclength,int rports,int wports,int cache);
-double array_bitline_power_rd(int rows,int cols,double bitlinelength,int rports,int wports,int cache);
-double array_bitline_power_wr(int rows,int cols,double bitlinelength,int rports,int wports,int cache);
 double simple_array_power(int rows,int cols,int rports,int wports,int cache);
 double simple_array_decoder_power(int rows,int cols,int rports,int wports,int cache);
 double simple_array_bitline_power(int rows,int cols,int rports,int wports,int cache);
@@ -673,80 +582,5 @@ void power_reg_stats(struct stat_sdb_t *sdb);/* stats database */
 void calculate_time(time_result_type*, time_parameter_type*);
 void output_data(time_result_type*, time_parameter_type*);
 void calculate_power(power_result_type*);
-int pop_count(qword_t bits);
-int pop_count_slow(qword_t bits);
-
-extern counter_t rename_access;
-extern counter_t bpred_access;
-extern counter_t window_access;
-extern counter_t lsq_access;
-extern counter_t regfile_access;
-extern counter_t icache_access;
-extern counter_t icache2_access;
-extern counter_t dcache_access;
-extern counter_t dcache2_access;
-/* Added by kimns */
-extern counter_t itlb_access;
-extern counter_t dtlb_access;
-extern counter_t alu_access;
-extern counter_t ialu_access;
-extern counter_t falu_access;
-extern counter_t resultbus_access;
-
-extern counter_t window_selection_access;
-extern counter_t window_wakeup_access;
-extern counter_t window_preg_access;
-extern counter_t lsq_preg_access;
-extern counter_t lsq_wakeup_access;
-extern counter_t lsq_store_data_access;
-extern counter_t lsq_load_data_access;
-
-extern counter_t window_total_pop_count_cycle;
-extern counter_t window_num_pop_count_cycle;
-extern counter_t lsq_total_pop_count_cycle;
-extern counter_t lsq_num_pop_count_cycle;
-extern counter_t regfile_total_pop_count_cycle;
-extern counter_t regfile_num_pop_count_cycle;
-extern counter_t resultbus_total_pop_count_cycle;
-extern counter_t resultbus_num_pop_count_cycle;
-
-/* for HD Wattch Model */
-/* For BTB */
-extern qword_t btb_decaddr_hd;
-extern qword_t btb_tagaddr_hd;
-extern qword_t btaddr_hd;
-extern enum mem_cmd btb_mem_cmd;
-
-
-/* For Level 1 Instruction Cache */
-extern qword_t icache_decaddr_hd;
-extern qword_t icache_tagaddr_hd;
-extern qword_t icache_inst_hd;
-extern qword_t tot_icache_decaddr_hd;
-extern qword_t tot_icache_tagaddr_hd;
-extern qword_t tot_icache_inst_hd;
-
-extern enum mem_cmd icache_mem_cmd;
-
-/* For Level 2 Instruction Cache */
-extern qword_t icache2_decaddr_hd;
-extern qword_t icache2_tagaddr_hd;
-extern qword_t icache2_inst_hd;
-extern enum mem_cmd icache2_mem_cmd;
-
-
-/* For Level 1 Data Cache */
-extern qword_t dcache_decaddr_hd;
-extern qword_t dcache_tagaddr_hd;
-extern qword_t dcache_data_hd;
-extern qword_t tot_dcache_decaddr_hd;
-extern qword_t tot_dcache_tagaddr_hd;
-extern qword_t tot_dcache_data_hd;
-
-extern enum mem_cmd dcache_mem_cmd;
-
-/* For Level 2 Data Cache */
-extern qword_t dcache2_decaddr_hd;
-extern qword_t dcache2_tagaddr_hd;
-extern qword_t dcache2_data_hd;
-extern enum mem_cmd dcache2_mem_cmd;
+int pop_count(quad_t bits);
+int pop_count_slow(quad_t bits);

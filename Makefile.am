@@ -53,7 +53,8 @@ libsim_a_SOURCES = \
 	memory.c regs.c cache.c bpred.c ptrace.c \
 	resource.c endian.c dlite.c eval.c options.c range.c \
 	eio.c stats.c endian.c misc.c \
-	loader.c symbol.c machine.c syscall.c
+	loader.c symbol.c machine.c syscall.c \
+	power.c time.c cacti/io.c
 
 libsim_power_a_SOURCES = \
 	main.c \
@@ -70,7 +71,8 @@ noinst_HEADERS = \
 	eio.h range.h version.h endian.h misc.h
 
 bin_PROGRAMS = sim-fast sim-safe sim-cache sim-profile sim-bpred \
-	sim-cheetah sim-outorder sim-dis sim-depchk sim-uop sim-panalyzer
+	sim-cheetah sim-outorder sim-dis sim-depchk sim-uop sim-panalyzer \
+	sim-wattch
 
 EXTRA_PROGRAMS = sim-armulator sim-eio sysprobe
 
@@ -83,6 +85,7 @@ sim_eio_LDADD = libsim.a libexo/libexo.a
 sim_bpred_LDADD = libsim.a libexo/libexo.a
 sim_cheetah_LDADD = libsim.a libcheetah/libcheetah.a libexo/libexo.a
 sim_outorder_LDADD = libsim.a libexo/libexo.a
+sim_wattch_LDADD = libsim.a libexo/libexo.a
 sim_armulator_LDADD = libsim.a libexo/libexo.a
 sim_dis_LDADD = libsim.a libexo/libexo.a
 sim_depchk_LDADD = libsim.a libexo/libexo.a
@@ -97,6 +100,7 @@ sim_eio_DEPENDENCIES = libsim.a libexo/libexo.a
 sim_bpred_DEPENDENCIES = libsim.a libexo/libexo.a
 sim_cheetah_DEPENDENCIES = libsim.a libcheetah/libcheetah.a libexo/libexo.a
 sim_outorder_DEPENDENCIES = libsim.a libexo/libexo.a
+sim_wattch_DEPENDENCIES = libsim.a libexo/libexo.a
 sim_armulator_DEPENDENCIES = libsim.a libexo/libexo.a
 sim_dis_DEPENDENCIES = libsim.a libexo/libexo.a
 sim_depchk_DEPENDENCIES = libsim.a libexo/libexo.a
@@ -174,6 +178,11 @@ sim-tests sim-tests-nt: sysprobe$(EXEEXT) $(PROGS)
 	cd tests $(CS) \
 	$(MAKE) "MAKE=$(MAKE)" "RM=$(RM)" "ENDIAN=`./sysprobe -s`" tests \
 		"DIFF=$(DIFF)" "SIM_DIR=.." "SIM_BIN=sim-outorder$(EXEEXT)" \
+		"X=/" "CS=$(CS)" $(CS) \
+	cd ..
+	cd tests $(CS) \
+	$(MAKE) "MAKE=$(MAKE)" "RM=$(RM)" "ENDIAN=`./sysprobe -s`" tests \
+		"DIFF=$(DIFF)" "SIM_DIR=.." "SIM_BIN=sim-wattch$(EXEEXT)" \
 		"X=/" "CS=$(CS)" $(CS) \
 	cd ..
 
