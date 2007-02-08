@@ -175,6 +175,8 @@
 
 #ifdef LV2_PANALYZER_H
 #include "./libpanalyzer/technology.h"
+#else
+#include "power.h"
 #endif
 
 #if 0 /* cross-endian execution now works with EIO trace files only... */
@@ -3003,12 +3005,10 @@ int *_afu_lat = NULL;
 void
 afu_panalyzer_set_params (double freq)
 {
-#ifdef LV2_PANALYZER_H
   if (_afu_clk_freq)
     *_afu_clk_freq = freq * 1e6;
   if (_afu_vdd)
     *_afu_vdd = Vdd;
-#endif
 }
 
 void
@@ -3025,16 +3025,18 @@ md_reg_stats(struct stat_sdb_t *sdb)
   stat_reg_counter(sdb, "afu_count",
                    "total number of AFU instructions executed",
                    &afu_count, /* initial value */ 0, /* format */ NULL);
-#ifdef LV2_PANALYZER_H
-  stat_reg_double(sdb, "afu_peak",
-                   "afu peak power dissipation",
-                   &afu_max_power, /* initial value */ 0, /* format */ NULL);
-  stat_reg_double(sdb, "afu_pdissipation",
-                   "afu total power dissipation",
-                   &afu_total_power, /* initial value */ 0, /* format */ NULL);
-  stat_reg_formula(sdb, "afu_avgpdissipation",
-                   "afu average power dissipation",
-                   "afu_pdissipation / sim_cycle", /* format */ NULL);
-#endif
+
+  if (_afu_vdd)
+    {
+      stat_reg_double(sdb, "afu_peak",
+                       "afu peak power dissipation",
+                       &afu_max_power, /* initial value */ 0, /* format */ NULL);
+      stat_reg_double(sdb, "afu_pdissipation",
+                       "afu total power dissipation",
+                       &afu_total_power, /* initial value */ 0, /* format */ NULL);
+      stat_reg_formula(sdb, "afu_avgpdissipation",
+                       "afu average power dissipation",
+                       "afu_pdissipation / sim_cycle", /* format */ NULL);
+    }
 }
 

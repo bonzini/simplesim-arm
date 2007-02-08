@@ -1456,6 +1456,8 @@ sim_check_options(struct opt_odb_t *odb,        /* options database */
   if (res_fpmult > MAX_INSTS_PER_CLASS)
     fatal("number of FP mult/div's must be <= MAX_INSTS_PER_CLASS");
   fu_config[FU_FPMULT_INDEX].quantity = res_fpmult;
+
+  afu_panalyzer_set_params (Mhz / 1e6);
 }
 
 /* print simulator-specific configuration information */
