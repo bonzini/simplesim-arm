@@ -2118,51 +2118,54 @@ void calculate_power(power)
     fprintf(stderr,"global clock power == %f\n",clockpower);
   }
 
-  time_parameters.cache_size = cache_dl2->nsets * cache_dl2->bsize * cache_dl2->assoc; /* C */
-  time_parameters.block_size = cache_dl2->bsize; /* B */
-  time_parameters.associativity = cache_dl2->assoc; /* A */
-  time_parameters.number_of_sets = cache_dl2->nsets; /* C/(B*A) */
+  if (cache_dl2)
+    {
+      time_parameters.cache_size = cache_dl2->nsets * cache_dl2->bsize * cache_dl2->assoc; /* C */
+      time_parameters.block_size = cache_dl2->bsize; /* B */
+      time_parameters.associativity = cache_dl2->assoc; /* A */
+      time_parameters.number_of_sets = cache_dl2->nsets; /* C/(B*A) */
 
-  calculate_time(&time_result,&time_parameters);
-  output_data(&time_result,&time_parameters);
+      calculate_time(&time_result,&time_parameters);
+      output_data(&time_result,&time_parameters);
 
-  ndwl=time_result.best_Ndwl;
-  ndbl=time_result.best_Ndbl;
-  nspd=time_result.best_Nspd;
-  ntwl=time_result.best_Ntwl;
-  ntbl=time_result.best_Ntbl;
-  ntspd=time_result.best_Ntspd;
-  c = time_parameters.cache_size;
-  b = time_parameters.block_size;
-  a = time_parameters.associativity;
+      ndwl=time_result.best_Ndwl;
+      ndbl=time_result.best_Ndbl;
+      nspd=time_result.best_Nspd;
+      ntwl=time_result.best_Ntwl;
+      ntbl=time_result.best_Ntbl;
+      ntspd=time_result.best_Ntspd;
+      c = time_parameters.cache_size;
+      b = time_parameters.block_size;
+      a = time_parameters.associativity;
 
-  rowsb = c/(b*a*ndbl*nspd);
-  colsb = 8*b*a*nspd/ndwl;
+      rowsb = c/(b*a*ndbl*nspd);
+      colsb = 8*b*a*nspd/ndwl;
 
-  tagsize = va_size - ((int)logtwo(cache_dl2->nsets) + (int)logtwo(cache_dl2->bsize));
-  trowsb = c/(b*a*ntbl*ntspd);
-  tcolsb = a * (tagsize + 1 + 6) * ntspd/ntwl;
+      tagsize = va_size - ((int)logtwo(cache_dl2->nsets) + (int)logtwo(cache_dl2->bsize));
+      trowsb = c/(b*a*ntbl*ntspd);
+      tcolsb = a * (tagsize + 1 + 6) * ntspd/ntwl;
 
-  if(verbose) {
-    fprintf(stderr,"%d KB %d-way cache (%d-byte block size):\n",c,a,b);
-    fprintf(stderr,"ndwl == %d, ndbl == %d, nspd == %d\n",ndwl,ndbl,nspd);
-    fprintf(stderr,"%d sets of %d rows x %d cols\n",ndwl*ndbl,rowsb,colsb);
-    fprintf(stderr,"tagsize == %d\n",tagsize);
-  }
+      if(verbose) {
+        fprintf(stderr,"%d KB %d-way cache (%d-byte block size):\n",c,a,b);
+        fprintf(stderr,"ndwl == %d, ndbl == %d, nspd == %d\n",ndwl,ndbl,nspd);
+        fprintf(stderr,"%d sets of %d rows x %d cols\n",ndwl*ndbl,rowsb,colsb);
+        fprintf(stderr,"tagsize == %d\n",tagsize);
+      }
 
-  predeclength = rowsb * (RegCellHeight + WordlineSpacing);
-  wordlinelength = colsb *  (RegCellWidth + BitlineSpacing);
-  bitlinelength = rowsb * (RegCellHeight + WordlineSpacing);
+      predeclength = rowsb * (RegCellHeight + WordlineSpacing);
+      wordlinelength = colsb *  (RegCellWidth + BitlineSpacing);
+      bitlinelength = rowsb * (RegCellHeight + WordlineSpacing);
 
-  if(verbose)
-    fprintf(stderr,"dcache2 power stats\n");
-  power->dcache2_decoder = array_decoder_power(rowsb,colsb,predeclength,1,1,cache);
-  power->dcache2_wordline = array_wordline_power(rowsb,colsb,wordlinelength,1,1,cache);
-  power->dcache2_bitline = array_bitline_power(rowsb,colsb,bitlinelength,1,1,cache);
-  power->dcache2_senseamp = senseamp_power(colsb);
-  power->dcache2_tagarray = simple_array_power(trowsb,tcolsb,1,1,cache);
-
-  power->dcache2_power = power->dcache2_decoder + power->dcache2_wordline + power->dcache2_bitline + power->dcache2_senseamp + power->dcache2_tagarray;
+      if(verbose)
+        fprintf(stderr,"dcache2 power stats\n");
+      power->dcache2_decoder = array_decoder_power(rowsb,colsb,predeclength,1,1,cache);
+      power->dcache2_wordline = array_wordline_power(rowsb,colsb,wordlinelength,1,1,cache);
+      power->dcache2_bitline = array_bitline_power(rowsb,colsb,bitlinelength,1,1,cache);
+      power->dcache2_senseamp = senseamp_power(colsb);
+      power->dcache2_tagarray = simple_array_power(trowsb,tcolsb,1,1,cache);
+    
+      power->dcache2_power = power->dcache2_decoder + power->dcache2_wordline + power->dcache2_bitline + power->dcache2_senseamp + power->dcache2_tagarray;
+    }
 
   power->rat_decoder *= crossover_scaling;
   power->rat_wordline *= crossover_scaling;
@@ -2224,14 +2227,26 @@ void calculate_power(power)
   
   power->clock_power *= crossover_scaling;
 
-  power->dcache2_decoder *= crossover_scaling;
-  power->dcache2_wordline *= crossover_scaling;
-  power->dcache2_bitline *= crossover_scaling;
-  power->dcache2_senseamp *= crossover_scaling;
-  power->dcache2_tagarray *= crossover_scaling;
+  if (cache_dl2)
+    {
+      power->dcache2_decoder *= crossover_scaling;
+      power->dcache2_wordline *= crossover_scaling;
+      power->dcache2_bitline *= crossover_scaling;
+      power->dcache2_senseamp *= crossover_scaling;
+      power->dcache2_tagarray *= crossover_scaling;
 
-  power->dcache2_power *= crossover_scaling;
+      power->dcache2_power *= crossover_scaling;
+    }
+  else
+    {
+      power->dcache2_decoder = 0.0;
+      power->dcache2_wordline = 0.0;
+      power->dcache2_bitline = 0.0;
+      power->dcache2_senseamp = 0.0;
+      power->dcache2_tagarray = 0.0;
 
+      power->dcache2_power = 0.0;
+    }
   power->total_power = power->local_predict + power->global_predict + 
     power->chooser + power->btb +
     power->rat_decoder + power->rat_wordline + 
