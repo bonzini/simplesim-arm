@@ -815,11 +815,14 @@ process_option(struct opt_odb_t *odb,	/* option database */
   if (!opt)
     {
       /* no one registered this option */
-      warn("option `%s' is undefined", argv[index]);
-
       /* parse one argument, tentatively */
       if (index < argc && argv[index][0] != '-')
-	index++;
+        {
+	  warn("option `%s %s' is undefined", argv[index - 1], argv[index]);
+	  index++;
+	}
+      else
+	warn("option `%s' is undefined", argv[index - 1]);
       return index;
     }
 
