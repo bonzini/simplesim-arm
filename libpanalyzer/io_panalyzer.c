@@ -165,6 +165,7 @@ create_io_panalyzer(
 		/* put leakage power numbers in all the power window entry 
 		 * b/c leakage is access independent and swithing independent */
 		(pspec->pmwindow + i)->leakage = estimate_pdissipation(pspec->Ceffs->lCeff, pspec->opfreq, pspec->svolt);
+		(pspec->pmwindow + i)->pdissipation = (pspec->pmwindow + i)->leakage;
 	}
 	
 	return pspec;

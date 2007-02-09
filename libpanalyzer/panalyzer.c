@@ -211,9 +211,16 @@ integrate_fu_pdissipation(
 	pdissipation->internal += (pmwindow + pmwindex)->internal;
 	pdissipation->leakage += (pmwindow + pmwindex)->leakage;
 	pdissipation->pdissipation += (pmwindow + pmwindex)->pdissipation;
+
 	/* is this a peak power value? */
 	if((pmwindow + pmwindex)->pdissipation >  pdissipation->peak)
 	pdissipation->peak =  (pmwindow + pmwindex)->pdissipation;
+
+	/* PAOLO, sum just once??? */
+	(pmwindow + pmwindex)->switching = 0;
+	(pmwindow + pmwindex)->internal = 0;
+	(pmwindow + pmwindex)->pdissipation = (pmwindow + pmwindex)->leakage;
+	/* end PAOLO */
 
 	return (pmwindow + pmwindex)->pdissipation;
 }
